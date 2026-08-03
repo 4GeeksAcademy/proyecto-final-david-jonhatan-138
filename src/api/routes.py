@@ -1,10 +1,11 @@
 """
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
-from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User
-from api.utils import generate_sitemap, APIException
+from flask import Blueprint
 from flask_cors import CORS
+
+from api.controllers.main_controller import hello
+from api.controllers.auth_controller import login as login_controller, signup as signup_controller
 
 api = Blueprint('api', __name__)
 
@@ -14,9 +15,14 @@ CORS(api)
 
 @api.route('/hello', methods=['POST', 'GET'])
 def handle_hello():
+    return hello()
 
-    response_body = {
-        "message": "Hello! I'm a message that came from the backend, check the network tab on the google inspector and you will see the GET request"
-    }
 
-    return jsonify(response_body), 200
+@api.route('/login', methods=['POST'])
+def login():
+    return login_controller()
+
+
+@api.route('/signin', methods=['POST'])
+def signin():
+    return signup_controller()
