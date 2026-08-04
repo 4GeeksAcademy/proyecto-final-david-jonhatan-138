@@ -7,15 +7,10 @@ from flask_cors import CORS
 from api.controllers.main_controller import hello
 from api.controllers.auth_controller import login as login_controller, signup as signup_controller
 
-api = Blueprint('api', __name__)
+api = Blueprint('api', __name__,"/api")
 
 # Allow CORS requests to this API
 CORS(api)
-
-
-@api.route('/hello', methods=['POST', 'GET'])
-def handle_hello():
-    return hello()
 
 
 @api.route('/login', methods=['POST'])
