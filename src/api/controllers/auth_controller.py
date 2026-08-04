@@ -2,7 +2,6 @@ from flask import request, jsonify
 from api.models.user import UserRole
 from api.services.user_service import get_user_by_email, create_user
 from api.models import db
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
 
 def login():
@@ -16,10 +15,9 @@ def login():
     user = get_user_by_email(email)
     if user is None or user.password != password:
         return jsonify({"message": "Invalid email or password"}), 401
-    
-    token = create_access_token(identity=str(user.serialize()["id"]))
-    
-    return jsonify({"user": user.serialize(), "token": token}), 200
+
+    return jsonify({"user": user.serialize()}), 200
+
 
 def signup():
     user_data = request.get_json(silent=True) or {}
