@@ -1,8 +1,16 @@
+from __future__ import annotations
+
 import enum
 from datetime import datetime
+from typing import TYPE_CHECKING
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import DateTime, String, Enum, ForeignKey
 from api.models import db
+
+if TYPE_CHECKING:
+    from api.models.user import User
+    from api.models.client import Client
+    from api.models.service import Service
 
 
 class AppointmentStatus(enum.Enum):
@@ -44,9 +52,9 @@ class Appointment(db.Model):
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relaciones
-    user: Mapped["User"] = relationship(back_populates="appointments")
-    client: Mapped["Client"] = relationship(back_populates="appointments")
-    service: Mapped["Service"] = relationship(back_populates="appointments")
+    user: Mapped[User] = relationship(back_populates="appointments")
+    client: Mapped[Client] = relationship(back_populates="appointments")
+    service: Mapped[Service] = relationship(back_populates="appointments")
 
     def serialize(self):
         return {
