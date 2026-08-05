@@ -11,6 +11,7 @@ from api.controllers.appointment_controller import (
     get_all_appointments as get_all_appointments_controller,
     get_appointment as get_appointment_controller
 )
+from api.controllers.client_controller import ClientController
 
 api = Blueprint('api', __name__,"/api")
 
@@ -41,3 +42,35 @@ def fetch_appointment(appointment_id):
 @api.route('/appointments', methods=['POST'])
 def create_appointment():
     return create_appointment_controller()
+
+
+@api.route('/clients', methods=['GET'])
+def get_all_clients():
+    return ClientController.get_all_clients()
+
+
+@api.route('/clients/<int:client_id>', methods=['GET'])
+def get_client(client_id):
+    return ClientController.get_client(client_id)
+
+
+@api.route('/clients/user/<int:user_id>', methods=['GET'])
+def get_all_clients_by_user(user_id):
+    return ClientController.get_all_clients_by_user(user_id)
+
+
+@api.route('/clients', methods=['POST'])
+def add_client():
+    return ClientController.add_client()
+
+
+@api.route('/clients/<int:client_id>', methods=['DELETE'])
+def delete_client(client_id):
+    return ClientController.delete_client(client_id)
+
+
+@api.route('/clients/<int:client_id>', methods=['PATCH'])
+def patch_client(client_id):
+    return ClientController.patch_client(client_id)
+
+
