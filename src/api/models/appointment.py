@@ -38,8 +38,8 @@ class Appointment(db.Model):
     service_id: Mapped[int] = mapped_column(
         ForeignKey("service.id"), nullable=False)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
-    client_id: Mapped[int] = mapped_column(
-        ForeignKey("client.id"), nullable=False)
+    client_id = mapped_column(ForeignKey("client.id", ondelete="CASCADE"), nullable=False)
+
 
     calendly_event_uri: Mapped[str] = mapped_column(String(255))
     calendly_invitee_uri: Mapped[str] = mapped_column(String(255))
