@@ -3,9 +3,10 @@ import { Link, useNavigate, useParams } from "react-router-dom";  // To use link
 import useGlobalReducer from "../hooks/useGlobalReducer";  // Import a custom hook for accessing the global state
 import { useState } from "react";
 import { loginService } from "../services/AuthServices";
+import clientsServices from "../services/ClientsServices";
 
 export const Login = props => {
-    const { dispatch } = useGlobalReducer()
+    const { store, dispatch } = useGlobalReducer()
     const navigate = useNavigate();
     const [form, setForm] = useState({ email: "", password: "" });
 
@@ -15,7 +16,7 @@ export const Login = props => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         const [data, error] = await loginService(form);
 
         if (error) {
@@ -24,6 +25,12 @@ export const Login = props => {
         }
 
         dispatch({ type: "login", payload: { token: data.token, user: data.user } });
+        try {
+            const dataClients = await clientsServices.getAllClientsByUser(data.user.id)
+            dispatch({ type: 'setClients', payload: dataClients })
+        } catch (error) {
+            toast.error("Characters didn't work.")
+        }
         navigate("/professional");
     };
 
@@ -36,12 +43,12 @@ export const Login = props => {
                 <form onSubmit={handleSubmit}>
                     <div className="mb-3">
                         <label className="form-label">Correo electrónico</label>
-                        <input type="email" className="form-control" name="email" placeholder="tuemail@ejemplo.com" required onChange={handleChange}/>
+                        <input type="email" className="form-control" name="email" placeholder="tuemail@ejemplo.com" required onChange={handleChange} />
                     </div>
 
                     <div className="mb-3">
                         <label className="form-label">Contraseña</label>
-                        <input type="password" className="form-control" name="password" placeholder="••••••••" required onChange={handleChange}/>
+                        <input type="password" className="form-control" name="password" placeholder="••••••••" required onChange={handleChange} />
                     </div>
 
                     <button type="submit" className="btn btn-primary w-100">Entrar</button>

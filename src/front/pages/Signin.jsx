@@ -13,9 +13,7 @@ export default function Signin() {
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        console.log(form);
-        
+        e.preventDefault();        
         const [data, error] = await signinService(form);
 
         if (error) {

@@ -3,6 +3,7 @@ export const initialStore = () => {
     token: localStorage.getItem("token") || null,
     user: JSON.parse(localStorage.getItem("user")) || null,
     isAuthenticated: !!localStorage.getItem("token"),
+    clientsList: [],
   };
 };
 
@@ -34,6 +35,42 @@ export default function storeReducer(store, action = {}) {
         user: null,
         isAuthenticated: false,
       };
+    case "setClients":
+      if (store.isAuthenticated) {
+        const clientsList = [action.payload];
+        return {
+          ...store,
+          clientsList: [...clientsList],
+        };
+      }
+    case "deleteClientsList":
+      const id = action.payload;
+      const clientsListDelete = store.clientsList[0].filter(
+        (client) => client.id !== id,
+      );
+
+      return {
+        ...store,
+        clientsList: [clientsListDelete],
+      };
+    case "addClientList":
+      const clientsListAdd = store.clientsList[0];
+      const client = action.payload;
+      const newClientsList = [[...clientsListAdd, client]];
+      return {
+        ...store,
+        clientsList: newClientsList,
+      };
+    case "updateClientList":
+      const updated = store.clientsList[0].map((c) =>
+        c.id === action.payload.id ? action.payload : c,
+      );
+
+      return {
+        ...store,
+        clientsList: [updated],
+      };
+
     default:
       throw Error("Unknown action.");
   }

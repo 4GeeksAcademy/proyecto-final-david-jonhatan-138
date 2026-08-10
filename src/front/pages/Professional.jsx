@@ -1,17 +1,20 @@
 import { Link } from "react-router-dom";
+import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
+
 
 export const Professional = () => {
-    const profile = {
-        name: "Ana Pérez",
-        category: "Fisioterapia",
-        email: "ana.perez@clinic.com",
-        phone: "+34 600 123 456",
-        role: "Profesional",
-        clientsCount: 24,
-        servicesCount: 5,
-        upcomingAppointments: 6,
-    };
-
+    const { store, dispatch } = useGlobalReducer()
+    const profile = store.user
+    // {
+    //     name: "Ana Pérez",
+    //     category: "Fisioterapia",
+    //     email: "ana.perez@clinic.com",
+    //     phone: "+34 600 123 456",
+    //     role: "Profesional",
+    //     clientsCount: 24,
+    //     servicesCount: 5,
+    //     upcomingAppointments: 6,
+    // }
     const services = [
         { id: 1, title: "Terapia de espalda", duration: 45, price: 35 },
         { id: 2, title: "Masaje deportivo", duration: 60, price: 45 },
@@ -23,13 +26,11 @@ export const Professional = () => {
         { id: 2, client: "Pablo Ruiz", time: "2026-08-05 12:00", status: "Pendiente", service: "Masaje deportivo" },
         { id: 3, client: "Carla Moreno", time: "2026-08-06 09:00", status: "Cancelado", service: "Rehabilitación muscular" },
     ];
-
-    const clients = [
-        { id: 1, name: "María López", email: "maria.lopez@example.com", phone: "+34 611 223 334" },
-        { id: 2, name: "Pablo Ruiz", email: "pablo.ruiz@example.com", phone: "+34 622 334 445" },
-        { id: 3, name: "Carla Moreno", email: "carla.moreno@example.com", phone: "+34 633 445 556" },
-    ];
-
+    const clients = Array.isArray(store.clientsList) && store.clientsList.length > 0
+        ? store.clientsList[0]
+        : [];    
+    console.log(clients);
+    
     return (
         <div className="container py-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
@@ -45,10 +46,10 @@ export const Professional = () => {
                     <div className="card shadow-sm">
                         <div className="card-body">
                             <h5 className="card-title">Perfil</h5>
-                            <p className="mb-1"><strong>Nombre:</strong> {profile.name}</p>
+                            <p className="mb-1"><strong>Nombre: </strong>{`${profile.name} ${profile.last_name}`}</p>
                             <p className="mb-1"><strong>Categoría:</strong> {profile.category}</p>
                             <p className="mb-1"><strong>Email:</strong> {profile.email}</p>
-                            <p className="mb-1"><strong>Teléfono:</strong> {profile.phone}</p>
+                            {/* <p className="mb-1"><strong>Teléfono:</strong> {profile.phone}</p> */}
                             <p className="mb-0"><strong>Rol:</strong> {profile.role}</p>
                         </div>
                     </div>
@@ -60,7 +61,7 @@ export const Professional = () => {
                             <div className="card text-white bg-primary h-100 shadow-sm">
                                 <div className="card-body">
                                     <h6 className="card-title">Clientes</h6>
-                                    <p className="display-6 mb-0">{profile.clientsCount}</p>
+                                    <p className="display-6 mb-0">{clients.length}</p>
                                 </div>
                             </div>
                         </div>
@@ -68,7 +69,7 @@ export const Professional = () => {
                             <div className="card text-white bg-success h-100 shadow-sm">
                                 <div className="card-body">
                                     <h6 className="card-title">Servicios</h6>
-                                    <p className="display-6 mb-0">{profile.servicesCount}</p>
+                                    <p className="display-6 mb-0">{profile.servicesCount ?? "Falta añadir"}</p>
                                 </div>
                             </div>
                         </div>
@@ -76,7 +77,7 @@ export const Professional = () => {
                             <div className="card text-white bg-info h-100 shadow-sm">
                                 <div className="card-body">
                                     <h6 className="card-title">Próximas citas</h6>
-                                    <p className="display-6 mb-0">{profile.upcomingAppointments}</p>
+                                    <p className="display-6 mb-0">{profile.upcomingAppointments ?? "Falta añadir"}</p>
                                 </div>
                             </div>
                         </div>
@@ -121,12 +122,14 @@ export const Professional = () => {
                         <div className="card-body">
                             <div className="d-flex justify-content-between align-items-center mb-3">
                                 <h5 className="card-title mb-0">Clientes recientes</h5>
-                                <button className="btn btn-sm btn-outline-secondary">Ver todos</button>
+                                <Link to={"/show-clients"}>
+                                    <button className="btn btn-sm btn-outline-secondary">Ver todos</button>
+                                </Link>
                             </div>
                             <div className="list-group">
-                                {clients.map(client => (
+                                {clients.slice(-3).reverse().map(client => (
                                     <div key={client.id} className="list-group-item">
-                                        <h6 className="mb-1">{client.name}</h6>
+                                        <h6 className="mb-1">{client.full_name}</h6>
                                         <p className="mb-1 text-muted">{client.email}</p>
                                         <small>{client.phone}</small>
                                     </div>
