@@ -96,7 +96,6 @@ export default function storeReducer(store, action = {}) {
       const servicesListAdd = store.servicesList[0];
       const service = action.payload;
       const newServicesList = [[...servicesListAdd, service]];
-      console.log(service);
       
       return {
         ...store,

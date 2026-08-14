@@ -143,7 +143,6 @@ export const Services = ({ services }) => {
             is_active: service.is_active ?? "",
             user_id: service.user_id
         });
-        console.log(editForm);
 
         const modal = bootstrap.Modal.getOrCreateInstance(
             document.getElementById("editServiceModal")
