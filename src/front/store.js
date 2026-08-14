@@ -4,6 +4,7 @@ export const initialStore = () => {
     user: JSON.parse(localStorage.getItem("user")) || null,
     isAuthenticated: !!localStorage.getItem("token"),
     clientsList: [],
+    servicesList: [],
   };
 };
 
@@ -44,9 +45,9 @@ export default function storeReducer(store, action = {}) {
         };
       }
     case "deleteClientsList":
-      const id = action.payload;
+      const id_client = action.payload;
       const clientsListDelete = store.clientsList[0].filter(
-        (client) => client.id !== id,
+        (client) => client.id !== id_client,
       );
 
       return {
@@ -69,6 +70,47 @@ export default function storeReducer(store, action = {}) {
       return {
         ...store,
         clientsList: [updated],
+      };
+
+    case "setServices":
+      if (store.isAuthenticated) {
+        const servicesList = [action.payload];                        
+        return {
+          ...store,
+          servicesList: [...servicesList],
+        };
+      }
+
+    case "deleteServicesList":
+      const id_service = action.payload;
+      const servicesListDelete = store.servicesList[0].filter(
+        (service) => service.id !== id_service,
+      );
+
+      return {
+        ...store,
+        servicesList: [servicesListDelete],
+      };
+
+    case "addServiceList":
+      const servicesListAdd = store.servicesList[0];
+      const service = action.payload;
+      const newServicesList = [[...servicesListAdd, service]];
+      console.log(service);
+      
+      return {
+        ...store,
+        servicesList: newServicesList,
+      };
+
+    case "updateServiceList":
+      const updatedServices = store.servicesList[0].map((s) =>
+        s.id === action.payload.id ? action.payload : s,
+      );
+
+      return {
+        ...store,
+        servicesList: [updatedServices],
       };
 
     default:
