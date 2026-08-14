@@ -74,7 +74,7 @@ export default function storeReducer(store, action = {}) {
 
     case "setServices":
       if (store.isAuthenticated) {
-        const servicesList = [action.payload];                        
+        const servicesList = [action.payload];
         return {
           ...store,
           servicesList: [...servicesList],
@@ -96,7 +96,7 @@ export default function storeReducer(store, action = {}) {
       const servicesListAdd = store.servicesList[0];
       const service = action.payload;
       const newServicesList = [[...servicesListAdd, service]];
-      
+
       return {
         ...store,
         servicesList: newServicesList,
@@ -110,6 +110,15 @@ export default function storeReducer(store, action = {}) {
       return {
         ...store,
         servicesList: [updatedServices],
+      };
+
+    case "updateUser":
+      return {
+        ...store,
+        user: {
+          ...store.user,
+          ...action.payload,
+        },
       };
 
     default:
