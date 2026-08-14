@@ -8,7 +8,8 @@ from api.models.user import User
 from api.services.appointment_service import (
     create_appointment as build_appointment,
     get_appointment_by_id,
-    get_appointments
+    get_appointments,
+    get_appointments_by_user,
 )
 
 
@@ -32,6 +33,11 @@ def _get_enum(enum_class, value, default=None, field_name=None):
 
 def get_all_appointments():
     appointments = get_appointments()
+    return jsonify({"appointments": [appointment.serialize() for appointment in appointments]}), 200
+
+
+def get_appointments_for_user(user_id):
+    appointments = get_appointments_by_user(user_id)
     return jsonify({"appointments": [appointment.serialize() for appointment in appointments]}), 200
 
 
@@ -79,9 +85,6 @@ def create_appointment():
     if client is None:
         return jsonify({"message": "Client not found"}), 404
 
-    def _optional_string(value):
-        return value or ""
-
     appointment = build_appointment(
         start_time=start_time,
         end_time=end_time,
@@ -90,15 +93,61 @@ def create_appointment():
         service_id=service.id,
         user_id=user.id,
         client_id=client.id,
-        calendly_event_uri=_optional_string(data.get("calendly_event_uri")),
-        calendly_invitee_uri=_optional_string(
-            data.get("calendly_invitee_uri")),
-        google_calendar_event_id=_optional_string(
-            data.get("google_calendar_event_id")),
-        cancel_url=_optional_string(data.get("cancel_url"))
     )
 
     db.session.add(appointment)
     db.session.commit()
 
     return jsonify({"appointment": appointment.serialize()}), 201
+
+
+def update_appointment(appointment_id):
+    appointment = get_appointment_by_id(appointment_id)
+    if appointment is None:
+        return jsonify({"message": "Appointment not found"}), 404
+
+    data = request.get_json(silent=True) or {}
+    if data.get("start_time"):
+        try:
+            appointment.start_time = _parse_datetime(
+                data["start_time"], "start_time")
+        except ValueError as error:
+            return jsonify({"message": str(error)}), 400
+    if data.get("end_time"):
+        try:
+            appointment.end_time = _parse_datetime(
+                data["end_time"], "end_time")
+        except ValueError as error:
+            return jsonify({"message": str(error)}), 400
+
+    if data.get("status"):
+        try:
+            appointment.status = _get_enum(AppointmentStatus, data.get(
+                "status"), appointment.status, "status")
+        except ValueError as error:
+            return jsonify({"message": str(error)}), 400
+
+    if data.get("service_id"):
+        service = Service.query.get(data["service_id"])
+        if service is None:
+            return jsonify({"message": "Service not found"}), 404
+        appointment.service_id = service.id
+
+    if data.get("client_id"):
+        client = Client.query.get(data["client_id"])
+        if client is None:
+            return jsonify({"message": "Client not found"}), 404
+        appointment.client_id = client.id
+
+    db.session.commit()
+    return jsonify({"appointment": appointment.serialize()}), 200
+
+
+def delete_appointment(appointment_id):
+    appointment = get_appointment_by_id(appointment_id)
+    if appointment is None:
+        return jsonify({"message": "Appointment not found"}), 404
+
+    db.session.delete(appointment)
+    db.session.commit()
+    return jsonify({"message": "Appointment deleted"}), 200
