@@ -1,36 +1,32 @@
 import { Link } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
-
+import ProfessionalCalendar from "../components/ProfessionalCalendar.jsx";
 
 export const Professional = () => {
-    const { store, dispatch } = useGlobalReducer()
-    const profile = store.user
-    // {
-    //     name: "Ana Pérez",
-    //     category: "Fisioterapia",
-    //     email: "ana.perez@clinic.com",
-    //     phone: "+34 600 123 456",
-    //     role: "Profesional",
-    //     clientsCount: 24,
-    //     servicesCount: 5,
-    //     upcomingAppointments: 6,
-    // }
+    const { store } = useGlobalReducer()
+    const profile = store.user || {
+        id: 1,
+        name: "Ana",
+        last_name: "Pérez",
+        category: "Fisioterapia",
+        email: "ana.perez@clinic.com",
+        role: "profesional",
+        servicesCount: 5,
+        upcomingAppointments: 6,
+    };
     const services = [
         { id: 1, title: "Terapia de espalda", duration: 45, price: 35 },
         { id: 2, title: "Masaje deportivo", duration: 60, price: 45 },
         { id: 3, title: "Rehabilitación muscular", duration: 50, price: 40 },
     ];
 
-    const appointments = [
-        { id: 1, client: "María López", time: "2026-08-05 10:00", status: "Confirmado", service: "Terapia de espalda" },
-        { id: 2, client: "Pablo Ruiz", time: "2026-08-05 12:00", status: "Pendiente", service: "Masaje deportivo" },
-        { id: 3, client: "Carla Moreno", time: "2026-08-06 09:00", status: "Cancelado", service: "Rehabilitación muscular" },
-    ];
     const clients = Array.isArray(store.clientsList) && store.clientsList.length > 0
         ? store.clientsList[0]
-        : [];    
-    console.log(clients);
-    
+        : [
+            { id: 1, full_name: "María López", email: "maria.lopez@email.com", phone: "600123456" },
+            { id: 2, full_name: "Pablo Ruiz", email: "pablo.ruiz@email.com", phone: "611223344" },
+        ];
+
     return (
         <div className="container py-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
@@ -143,37 +139,12 @@ export const Professional = () => {
             <div className="card shadow-sm mt-4">
                 <div className="card-body">
                     <div className="d-flex justify-content-between align-items-center mb-3">
-                        <h5 className="card-title mb-0">Próximas citas</h5>
-                        <button className="btn btn-sm btn-outline-secondary">Gestionar agenda</button>
+                        <div>
+                            <h5 className="card-title mb-0">Agenda interactiva</h5>
+                            <small className="text-muted">Crea, edita y elimina citas directamente sobre el calendario.</small>
+                        </div>
                     </div>
-                    <div className="table-responsive">
-                        <table className="table table-hover align-middle mb-0">
-                            <thead className="table-light">
-                                <tr>
-                                    <th>#</th>
-                                    <th>Cliente</th>
-                                    <th>Servicio</th>
-                                    <th>Hora</th>
-                                    <th>Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {appointments.map(appointment => (
-                                    <tr key={appointment.id}>
-                                        <td>{appointment.id}</td>
-                                        <td>{appointment.client}</td>
-                                        <td>{appointment.service}</td>
-                                        <td>{appointment.time}</td>
-                                        <td>
-                                            <span className={`badge ${appointment.status === "Confirmado" ? "bg-success" : appointment.status === "Pendiente" ? "bg-warning text-dark" : "bg-danger"}`}>
-                                                {appointment.status}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                    <ProfessionalCalendar services={services} clients={clients} />
                 </div>
             </div>
         </div>
