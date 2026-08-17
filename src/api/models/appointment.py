@@ -29,16 +29,30 @@ class Appointment(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     start_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     end_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+
+    # ENUM con nombre explícito (obligatorio en PostgreSQL)
     status: Mapped[AppointmentStatus] = mapped_column(
-        Enum(AppointmentStatus), nullable=False)
+        Enum(AppointmentStatus, name="appointmentstatus"),
+        nullable=False
+    )
+
+    # ENUM con nombre + server_default para PostgreSQL
     source: Mapped[AppointmentSource] = mapped_column(
-        Enum(AppointmentSource), nullable=False, default=AppointmentSource.manual)
+        Enum(AppointmentSource, name="appointmentsource"),
+        nullable=False,
+        server_default="manual"
+    )
 
     service_id: Mapped[int] = mapped_column(
-        ForeignKey("service.id"), nullable=False)
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
-    client_id = mapped_column(ForeignKey(
-        "client.id", ondelete="CASCADE"), nullable=False)
+        ForeignKey("service.id"), nullable=False
+    )
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("user.id"), nullable=False
+    )
+    client_id = mapped_column(
+        ForeignKey("client.id", ondelete="CASCADE"),
+        nullable=False
+    )
 
     calendly_event_uri: Mapped[str] = mapped_column(String(255))
     calendly_invitee_uri: Mapped[str] = mapped_column(String(255))
@@ -46,9 +60,11 @@ class Appointment(db.Model):
     cancel_url: Mapped[str] = mapped_column(String(255))
 
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow)
+        DateTime, default=datetime.utcnow
+    )
     update_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
 
     # Relaciones
     user: Mapped[User] = relationship(back_populates="appointments")

@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { SquarePen, Trash2 } from "lucide-react";
 import { Services } from "../components/Services.jsx";
 import ProfessionalCalendar from "../components/ProfessionalCalendar.jsx";
+import { Clients } from "../components/Clients.jsx";
 
 
 export const Professional = () => {
@@ -20,6 +21,7 @@ export const Professional = () => {
     const clients = Array.isArray(store.clientsList) && store.clientsList.length > 0
         ? store.clientsList[0]
         : [];
+    const appointments = []
 
 
 
@@ -79,28 +81,11 @@ export const Professional = () => {
                 </div>
 
                 <div className="row gy-4 mt-4">
-                    <Services services={services}></Services>
-
                     <div className="col-12 col-xl-6">
-                        <div className="card shadow-sm">
-                            <div className="card-body">
-                                <div className="d-flex justify-content-between align-items-center mb-3">
-                                    <h5 className="card-title mb-0">Clientes recientes</h5>
-                                    <Link to={"/show-clients"}>
-                                        <button className="btn btn-sm btn-outline-secondary">Ver todos</button>
-                                    </Link>
-                                </div>
-                                <div className="list-group">
-                                    {clients.slice(-3).reverse().map((client, index) => (
-                                        <div key={client.id ?? `client-${index}`} className="list-group-item">
-                                            <h6 className="mb-1">{client.full_name}</h6>
-                                            <p className="mb-1 text-muted">{client.email}</p>
-                                            <small>{client.phone}</small>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
+                        <Services services={services}></Services>
+                    </div>
+                    <div className="col-12 col-xl-6">
+                        <Clients clients={clients}></Clients>
                     </div>
                 </div>
 
@@ -137,18 +122,21 @@ export const Professional = () => {
                                     ))}
                                 </tbody>
                             </table>
-            <div className="card shadow-sm mt-4">
-                <div className="card-body">
-                    <div className="d-flex justify-content-between align-items-center mb-3">
-                        <div>
-                            <h5 className="card-title mb-0">Agenda interactiva</h5>
-                            <small className="text-muted">Crea, edita y elimina citas directamente sobre el calendario.</small>
+                        </div>
+                        <div className="card shadow-sm mt-4">
+                            <div className="card-body">
+                                <div className="d-flex justify-content-between align-items-center mb-3">
+                                    <div>
+                                        <h5 className="card-title mb-0">Agenda interactiva</h5>
+                                        <small className="text-muted">Crea, edita y elimina citas directamente sobre el calendario.</small>
+                                    </div>
+                                </div>
+                                <ProfessionalCalendar services={services} clients={clients} />
+                            </div>
                         </div>
                     </div>
-                    <ProfessionalCalendar services={services} clients={clients} />
                 </div>
             </div>
-
         </>
     );
 };

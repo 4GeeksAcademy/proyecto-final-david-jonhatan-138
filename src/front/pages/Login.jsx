@@ -32,7 +32,7 @@ export const Login = props => {
             dispatch({ type: 'setClients', payload: dataClients })
             dispatch({ type: 'setServices', payload: dataServices })
         } catch (error) {
-            toast.error("Characters didn't work.")
+            toast.error("Services didn't work.")
         }
         navigate("/professional");
     };
