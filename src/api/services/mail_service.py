@@ -2,16 +2,20 @@ import ssl
 from email.message import EmailMessage
 import smtplib
 import os
+from flask import request
 
-def mailResetPass(destinatario):
+
+def mail_reset_pass():
+    data = request.get_json(silent=True) or {}
     remitente = os.getenv("MAIL")
     password = os.getenv("PASSWORD")
+    destinatario = data["email"]
 
     msg = EmailMessage()
     msg["Subject"] = "Reiniciar Contraseña"
     msg["From"] = remitente
     msg["To"] = destinatario
-    msg.set_content("<a href='https://fuzzy-garbanzo-pjgwgr5jqwpwhr96p-3000.app.github.dev/reset-pass'>Reiniciar Contraseña<a/>")
+    msg.set_content(f"{os.getenv("VITE_FRONTEND_URL")}/reset-pass")
 
     context = ssl.create_default_context()
 
@@ -19,5 +23,4 @@ def mailResetPass(destinatario):
         smtp.login(remitente, password)
         smtp.send_message(msg)
 
-    print("Correo enviado con éxito")
-mailResetPass("davidplanaquerol@gmail.com")
+    return "Correo enviado con éxito"

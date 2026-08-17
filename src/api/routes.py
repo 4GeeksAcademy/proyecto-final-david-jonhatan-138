@@ -13,8 +13,9 @@ from api.controllers.appointment_controller import (
 )
 from api.controllers.client_controller import ClientController
 from api.controllers.service_controller import ServiceController
+from api.controllers.mail_controller import mail_reset_pass_controller
 
-api = Blueprint('api', __name__,"/api")
+api = Blueprint('api', __name__)
 
 # Allow CORS requests to this API
 CORS(api)
@@ -109,3 +110,6 @@ def patch_service(service_id):
     return ServiceController.patch_service(service_id)
 
 
+@api.route('/mail-reset-pass', methods=['POST'])
+def mail_reset_pass():
+    return mail_reset_pass_controller()
