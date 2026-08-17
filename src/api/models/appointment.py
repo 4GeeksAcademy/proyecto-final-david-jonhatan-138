@@ -21,7 +21,6 @@ class AppointmentStatus(enum.Enum):
 
 class AppointmentSource(enum.Enum):
     manual = "manual"
-    calendly = "calendly"
 
 
 class Appointment(db.Model):
@@ -38,8 +37,8 @@ class Appointment(db.Model):
     service_id: Mapped[int] = mapped_column(
         ForeignKey("service.id"), nullable=False)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
-    client_id = mapped_column(ForeignKey("client.id", ondelete="CASCADE"), nullable=False)
-
+    client_id = mapped_column(ForeignKey(
+        "client.id", ondelete="CASCADE"), nullable=False)
 
     calendly_event_uri: Mapped[str] = mapped_column(String(255))
     calendly_invitee_uri: Mapped[str] = mapped_column(String(255))
@@ -66,10 +65,6 @@ class Appointment(db.Model):
             "service_id": self.service_id,
             "user_id": self.user_id,
             "client_id": self.client_id,
-            "calendly_event_uri": self.calendly_event_uri,
-            "calendly_invitee_uri": self.calendly_invitee_uri,
-            "google_calendar_event_id": self.google_calendar_event_id,
-            "cancel_url": self.cancel_url,
             "created_at": self.created_at.isoformat(),
             "update_at": self.update_at.isoformat()
         }

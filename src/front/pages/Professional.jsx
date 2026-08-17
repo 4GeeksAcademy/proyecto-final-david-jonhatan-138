@@ -5,6 +5,7 @@ import servicesServices from "../services/ServicesServices";
 import toast from "react-hot-toast";
 import { SquarePen, Trash2 } from "lucide-react";
 import { Services } from "../components/Services.jsx";
+import ProfessionalCalendar from "../components/ProfessionalCalendar.jsx";
 
 
 export const Professional = () => {
@@ -16,11 +17,6 @@ export const Professional = () => {
         ? store.servicesList[0]
         : [];
 
-    const appointments = [
-        { id: 1, client: "María López", time: "2026-08-05 10:00", status: "Confirmado", service: "Terapia de espalda" },
-        { id: 2, client: "Pablo Ruiz", time: "2026-08-05 12:00", status: "Pendiente", service: "Masaje deportivo" },
-        { id: 3, client: "Carla Moreno", time: "2026-08-06 09:00", status: "Cancelado", service: "Rehabilitación muscular" },
-    ];
     const clients = Array.isArray(store.clientsList) && store.clientsList.length > 0
         ? store.clientsList[0]
         : [];
@@ -141,8 +137,15 @@ export const Professional = () => {
                                     ))}
                                 </tbody>
                             </table>
+            <div className="card shadow-sm mt-4">
+                <div className="card-body">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h5 className="card-title mb-0">Agenda interactiva</h5>
+                            <small className="text-muted">Crea, edita y elimina citas directamente sobre el calendario.</small>
                         </div>
                     </div>
+                    <ProfessionalCalendar services={services} clients={clients} />
                 </div>
             </div>
 
