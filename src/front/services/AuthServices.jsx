@@ -54,3 +54,23 @@ export const signinService = async ({email ,name ,last_name ,password ,category 
         return [null, err.message];
     }
 };
+
+export const updateUserService = async (id, userData) => {
+    try {
+        const response = await fetch(`${backendUrl}/api/user/${id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(userData),
+        });
+
+        if (!response.ok) {
+            return [null, "Error al actualizar el usuario"];
+        }
+
+        const data = await response.json();
+        return [data, null];
+
+    } catch (err) {
+        return [null, err.message];
+    }
+};

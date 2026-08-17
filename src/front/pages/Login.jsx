@@ -4,6 +4,7 @@ import useGlobalReducer from "../hooks/useGlobalReducer";  // Import a custom ho
 import { useState } from "react";
 import { loginService } from "../services/AuthServices";
 import clientsServices from "../services/ClientsServices";
+import servicesServices from "../services/ServicesServices";
 
 export const Login = props => {
     const { store, dispatch } = useGlobalReducer()
@@ -27,7 +28,9 @@ export const Login = props => {
         dispatch({ type: "login", payload: { token: data.token, user: data.user } });
         try {
             const dataClients = await clientsServices.getAllClientsByUser(data.user.id)
+            const dataServices = await servicesServices.getAllServicesByUser(data.user.id)
             dispatch({ type: 'setClients', payload: dataClients })
+            dispatch({ type: 'setServices', payload: dataServices })
         } catch (error) {
             toast.error("Characters didn't work.")
         }

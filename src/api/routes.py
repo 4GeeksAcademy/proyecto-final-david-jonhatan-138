@@ -5,7 +5,7 @@ from flask import Blueprint
 from flask_cors import CORS
 
 from api.controllers.main_controller import hello
-from api.controllers.auth_controller import login as login_controller, signup as signup_controller
+from api.controllers.auth_controller import login as login_controller, signup as signup_controller, patch_user_controller
 from api.controllers.appointment_controller import (
     create_appointment as create_appointment_controller,
     delete_appointment as delete_appointment_controller,
@@ -31,6 +31,11 @@ def login():
 @api.route('/signin', methods=['POST'])
 def signin():
     return signup_controller()
+
+
+@api.route('/user/<int:user_id>', methods=['PATCH'])
+def patch_user(user_id):
+    return patch_user_controller(user_id)
 
 
 @api.route('/appointments', methods=['GET'])
