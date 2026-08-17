@@ -14,6 +14,7 @@ import { Login } from "./pages/Login";
 import Signin from "./pages/Signin";
 import { PrivateRoute } from "./components/PrivateRoute";
 import { ShowClients } from "./pages/ShowClients";
+import { ResetPass } from "./pages/ResetPass";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -25,6 +26,7 @@ export const router = createBrowserRouter(
       <Route path="/login" element={<Login />} />
       <Route path="/signin" element={<Signin />} />
       <Route path="/show-clients" element={<PrivateRoute><ShowClients /></PrivateRoute>} />
+      <Route path="/reset-pass" element={<PrivateRoute><ResetPass /></PrivateRoute>} />
     </Route>
   )
 );
