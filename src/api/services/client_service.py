@@ -50,7 +50,7 @@ class ClientService:
         db.session.add(client)
         db.session.commit()
 
-        return jsonify(client.serialize()), 201
+        return client.serialize()
 
     @staticmethod
     def delete_client(client_id):

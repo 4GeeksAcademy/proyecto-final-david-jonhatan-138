@@ -154,42 +154,40 @@ export const Services = ({ services }) => {
 
     return (
         <>
-            <div className="col-12 col-xl-6">
-                <div className="card shadow-sm">
-                    <div className="card-body">
-                        <div className="d-flex justify-content-between align-items-center mb-3">
-                            <h5 className="card-title mb-0">Servicios</h5>
-                            <button className="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addServiceModal">Agregar servicio</button>
-                        </div>
-                        <div className="table-responsive">
-                            <table className="table table-borderless align-middle mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>Título</th>
-                                        <th>Duración</th>
-                                        <th>Precio</th>
-                                        <th>Acciones</th>
+            <div className="card shadow-sm">
+                <div className="card-body">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                        <h5 className="card-title mb-0">Servicios</h5>
+                        <button className="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addServiceModal">Agregar servicio</button>
+                    </div>
+                    <div className="table-responsive">
+                        <table className="table table-borderless align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Título</th>
+                                    <th>Duración</th>
+                                    <th>Precio</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {services.map(service => (
+                                    <tr key={service.id}>
+                                        <td>{service.title}</td>
+                                        <td>{service.duration} min</td>
+                                        <td>€ {service.price}</td>
+                                        <td>
+                                            <button className="btn btn-sm btn-outline-warning me-2" onClick={() => openEditModal(service)}>
+                                                <SquarePen />
+                                            </button>
+                                            <button className="btn btn-sm btn-outline-danger" onClick={() => setNumberDelete(service.id)} data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                                <Trash2 />
+                                            </button>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    {services.map(service => (
-                                        <tr key={service.id}>
-                                            <td>{service.title}</td>
-                                            <td>{service.duration} min</td>
-                                            <td>€ {service.price}</td>
-                                            <td>
-                                                <button className="btn btn-sm btn-outline-warning me-2" onClick={() => openEditModal(service)}>
-                                                    <SquarePen />
-                                                </button>
-                                                <button className="btn btn-sm btn-outline-danger" onClick={() => setNumberDelete(service.id)} data-bs-toggle="modal" data-bs-target="#deleteModal">
-                                                    <Trash2 />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

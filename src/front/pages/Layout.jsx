@@ -19,7 +19,7 @@ export const Layout = () => {
                 const dataClients = await clientsServices.getAllClientsByUser(store.user.id)
                 dispatch({ type: 'setClients', payload: dataClients })
             } catch (error) {
-                toast.error("Characters didn't work.")
+                toast.error("Clients didn't work.")
             }
         }
 

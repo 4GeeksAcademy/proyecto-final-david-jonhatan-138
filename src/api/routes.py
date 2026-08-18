@@ -2,14 +2,16 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 from flask import Blueprint
-from flask_cors import CORS
 
 from api.controllers.main_controller import hello
 from api.controllers.auth_controller import get_user_by_email_controller, login as login_controller, signup as signup_controller, patch_user_controller
 from api.controllers.appointment_controller import (
     create_appointment as create_appointment_controller,
+    delete_appointment as delete_appointment_controller,
     get_all_appointments as get_all_appointments_controller,
-    get_appointment as get_appointment_controller
+    get_appointment as get_appointment_controller,
+    get_appointments_for_user as get_appointments_for_user_controller,
+    update_appointment as update_appointment_controller,
 )
 from api.controllers.client_controller import ClientController
 from api.controllers.service_controller import ServiceController
@@ -18,8 +20,6 @@ from api.controllers.mail_controller import mail_reset_pass_controller
 api = Blueprint('api', __name__)
 
 # Allow CORS requests to this API
-CORS(api)
-
 
 @api.route('/login', methods=['POST'])
 def login():
@@ -41,6 +41,11 @@ def list_appointments():
     return get_all_appointments_controller()
 
 
+@api.route('/appointments/user/<int:user_id>', methods=['GET'])
+def list_appointments_by_user(user_id):
+    return get_appointments_for_user_controller(user_id)
+
+
 @api.route('/appointments/<int:appointment_id>', methods=['GET'])
 def fetch_appointment(appointment_id):
     return get_appointment_controller(appointment_id)
@@ -49,6 +54,16 @@ def fetch_appointment(appointment_id):
 @api.route('/appointments', methods=['POST'])
 def create_appointment():
     return create_appointment_controller()
+
+
+@api.route('/appointments/<int:appointment_id>', methods=['PATCH'])
+def patch_appointment(appointment_id):
+    return update_appointment_controller(appointment_id)
+
+
+@api.route('/appointments/<int:appointment_id>', methods=['DELETE'])
+def remove_appointment(appointment_id):
+    return delete_appointment_controller(appointment_id)
 
 
 @api.route('/clients', methods=['GET'])
