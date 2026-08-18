@@ -54,3 +54,9 @@ def signup():
 def patch_user_controller(user_id):
     user = patch_user(user_id)
     return jsonify(user), 200
+
+
+def get_user_by_email_controller():
+    credentials = request.get_json(silent=True) or {}
+    user = get_user_by_email(credentials.get("email"))
+    return jsonify({"user": user.serialize()}), 200

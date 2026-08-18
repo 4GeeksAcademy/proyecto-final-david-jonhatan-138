@@ -4,7 +4,7 @@ This module takes care of starting the API Server, Loading the DB and Adding the
 from flask import Blueprint
 
 from api.controllers.main_controller import hello
-from api.controllers.auth_controller import login as login_controller, signup as signup_controller, patch_user_controller
+from api.controllers.auth_controller import get_user_by_email_controller, login as login_controller, signup as signup_controller, patch_user_controller
 from api.controllers.appointment_controller import (
     create_appointment as create_appointment_controller,
     delete_appointment as delete_appointment_controller,
@@ -15,8 +15,9 @@ from api.controllers.appointment_controller import (
 )
 from api.controllers.client_controller import ClientController
 from api.controllers.service_controller import ServiceController
+from api.controllers.mail_controller import mail_reset_pass_controller
 
-api = Blueprint('api', __name__, "/api")
+api = Blueprint('api', __name__)
 
 # Allow CORS requests to this API
 
@@ -122,3 +123,13 @@ def delete_service(service_id):
 @api.route('/services/<int:service_id>', methods=['PATCH'])
 def patch_service(service_id):
     return ServiceController.patch_service(service_id)
+
+
+@api.route('/mail-reset-pass', methods=['POST'])
+def mail_reset_pass():
+    return mail_reset_pass_controller()
+
+
+@api.route('/user-email', methods=['POST'])
+def get_user_by_email():
+    return get_user_by_email_controller()

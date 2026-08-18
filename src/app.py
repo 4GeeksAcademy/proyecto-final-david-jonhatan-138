@@ -11,6 +11,9 @@ from api.admin import setup_admin
 from api.commands import setup_commands
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
+from dotenv import load_dotenv
+load_dotenv()
+# from models import Person
 
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 
