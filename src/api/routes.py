@@ -5,7 +5,7 @@ from flask import Blueprint
 from flask_cors import CORS
 
 from api.controllers.main_controller import hello
-from api.controllers.auth_controller import login as login_controller, signup as signup_controller, patch_user_controller
+from api.controllers.auth_controller import get_user_by_email_controller, login as login_controller, signup as signup_controller, patch_user_controller
 from api.controllers.appointment_controller import (
     create_appointment as create_appointment_controller,
     get_all_appointments as get_all_appointments_controller,
@@ -113,3 +113,8 @@ def patch_service(service_id):
 @api.route('/mail-reset-pass', methods=['POST'])
 def mail_reset_pass():
     return mail_reset_pass_controller()
+
+
+@api.route('/user-email', methods=['POST'])
+def get_user_by_email():
+    return get_user_by_email_controller()

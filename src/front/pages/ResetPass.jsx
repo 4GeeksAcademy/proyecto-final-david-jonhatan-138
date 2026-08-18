@@ -1,19 +1,39 @@
 import React, { useState } from "react";
 import toast from "react-hot-toast";
+import { getUserByEmail, updateUserService } from "../services/AuthServices";
+import useGlobalReducer from "../hooks/useGlobalReducer";
+import { useNavigate } from "react-router-dom";
 
 export function ResetPass() {
+    const { store } = useGlobalReducer();
     const [password, setPassword] = useState("");
     const [confirm, setConfirm] = useState("");
+    const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-
+        if (!password) {
+            return toast.error("El campo contraseña no puede estar vacio")
+        }
         if (password !== confirm) {
             return toast.error("Las contraseñas no coinciden")
         }
+        if (!localStorage.getItem("email")) {
+            updateUserService(store.user.id, {password: password})
+        }else{
+            let data = await getUserByEmail({email: localStorage.getItem("email")})
+            updateUserService(data[0].user.id, {password: password})
+        }
+        localStorage.removeItem("tokenReset")
+        localStorage.removeItem("email")
         toast.success("Contraseña actualizada correctamente")
+        setTimeout(()=>{
+            navigate("/professional");
+        },3000)
+
     };
 
+    
     return (
         <div className="d-flex justify-content-center">
             <div className="card p-4 shadow-sm" style={{ maxWidth: "400px" }}>

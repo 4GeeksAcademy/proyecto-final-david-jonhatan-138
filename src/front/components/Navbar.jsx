@@ -3,6 +3,7 @@ import useGlobalReducer from "../hooks/useGlobalReducer";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { updateUserService } from "../services/AuthServices";
+import { sendMessage } from "../services/SendMessageServices"
 
 export const Navbar = () => {
 	const { store, dispatch } = useGlobalReducer();
@@ -80,6 +81,13 @@ export const Navbar = () => {
 			[e.target.name]: e.target.value
 		});
 	}
+
+	function handleSendMessage() {
+		sendMessage({ email: store.user.email })
+		const tokenReset = crypto.randomUUID()
+		localStorage.setItem("tokenReset", tokenReset)
+		toast.success("Correo de recuperacion envido correctamente")
+	}
 	return (
 		<>
 			<nav className="navbar navbar-light bg-light">
@@ -111,6 +119,8 @@ export const Navbar = () => {
 					</div>
 				</div>
 			</nav>
+
+			{/* Modal Editar Usuario */}
 			<div
 				className="modal fade"
 				id="editUserModal"
@@ -194,12 +204,12 @@ export const Navbar = () => {
 							</div>
 
 							<div className="modal-footer">
-								<button
-									type="button"
-									className="btn btn-secondary"
-									data-bs-dismiss="modal"
-								>
+								<button type="button" className="btn btn-secondary" data-bs-dismiss="modal" >
 									Cancelar
+								</button>
+
+								<button type="button" className="btn btn-warning" onClick={() => handleSendMessage()}>
+									Restablecer Contraseña
 								</button>
 
 								<button type="submit" className="btn btn-primary">
@@ -207,7 +217,6 @@ export const Navbar = () => {
 								</button>
 							</div>
 						</form>
-
 					</div>
 				</div>
 			</div>

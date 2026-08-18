@@ -74,3 +74,22 @@ export const updateUserService = async (id, userData) => {
         return [null, err.message];
     }
 };
+
+export const getUserByEmail = async ({ email }) => {
+    try {
+        const response = await fetch(backendUrl + "/api/user-email", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email }),
+        });
+
+        if (!response.ok) {
+            return [null, "Error al encontrar el email"];
+        }
+
+        const data = await response.json();
+        return [data, null];
+    } catch (err) {
+        return [null, err.message];
+    }
+};
