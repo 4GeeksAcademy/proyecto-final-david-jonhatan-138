@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from api.models.user import UserRole
-from api.services.user_service import get_user_by_email, create_user
+from api.services.user_service import get_user_by_email, create_user, patch_user
 from api.models import db
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
@@ -50,3 +50,13 @@ def signup():
     db.session.commit()
 
     return jsonify({"user": user.serialize()}), 201
+
+def patch_user_controller(user_id):
+    user = patch_user(user_id)
+    return jsonify(user), 200
+
+
+def get_user_by_email_controller():
+    credentials = request.get_json(silent=True) or {}
+    user = get_user_by_email(credentials.get("email"))
+    return jsonify({"user": user.serialize()}), 200
