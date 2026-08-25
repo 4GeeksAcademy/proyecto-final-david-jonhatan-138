@@ -11,38 +11,52 @@ const statusClass = {
     canceled: "bg-danger",
 };
 
-const ProfessionalCalendar = ({ services, clients, userId }) => {
+const ProfessionalCalendar = ({ services, clients, userId, onAppointmentChange }) => {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const defaultClient = clients[0] || { id: 1, full_name: "Cliente sin nombre" };
-    const defaultService = services[0] || { id: 1, title: "Sin servicio" };
+    const defaultClient = clients && clients.length > 0 ? clients[0] : { id: 1, full_name: "Cliente de prueba" };
+    const defaultService = services && services.length > 0 ? services[0] : { id: 1, title: "Servicio base" };
 
     const fetchAppointments = async () => {
-        setLoading(true);
-        const response = await appointmentsServices.getAppointmentsByUser(userId);
-        const appointments = response.appointments || [];
+        if (!userId) {
+            setLoading(false);
+            return;
+        }
 
-        setEvents(
-            appointments.map((appointment) => ({
-                id: String(appointment.id),
-                title: `${clients.find((c) => c.id === appointment.client_id)?.full_name || defaultClient.full_name} - ${services.find((s) => s.id === appointment.service_id)?.title || defaultService.title}`,
-                start: appointment.start_time,
-                end: appointment.end_time,
-                extendedProps: {
-                    status: appointment.status,
-                    client_id: appointment.client_id,
-                    service_id: appointment.service_id,
-                },
-                className: statusClass[appointment.status] || "bg-secondary",
-            })),
-        );
-        setLoading(false);
+        try {
+            setLoading(true);
+            const response = await appointmentsServices.getAppointmentsByUser(userId);
+            const appointments = response?.appointments || [];
+
+            setEvents(
+                appointments.map((appointment) => {
+                    const client = clients.find((c) => c.id === appointment.client_id) || defaultClient;
+                    const service = services.find((s) => s.id === appointment.service_id) || defaultService;
+                    return {
+                        id: String(appointment.id),
+                        title: `${client.full_name} - ${service.title}`,
+                        start: appointment.start_time,
+                        end: appointment.end_time,
+                        extendedProps: {
+                            status: appointment.status,
+                            client_id: appointment.client_id,
+                            service_id: appointment.service_id,
+                        },
+                        className: statusClass[appointment.status] || "bg-secondary",
+                    };
+                })
+            );
+        } catch (error) {
+            console.error("Error al cargar las citas:", error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
         fetchAppointments();
-    }, [userId]);
+    }, [userId, clients, services]);
 
     const calendarOptions = useMemo(
         () => ({
@@ -58,91 +72,137 @@ const ProfessionalCalendar = ({ services, clients, userId }) => {
             selectMirror: true,
             dayMaxEvents: true,
             eventResizableFromStart: true,
+
+            // --- CREAR CITA ---
             select: async (selectionInfo) => {
                 const start = selectionInfo.start;
                 const end = selectionInfo.end;
-                const client = defaultClient;
-                const service = defaultService;
+
                 const appointmentPayload = {
                     start_time: start.toISOString(),
                     end_time: end.toISOString(),
-                    service_id: service.id,
-                    user_id: userId,
-                    client_id: client.id,
+                    service_id: defaultService?.id || 1,
+                    user_id: userId || 1,
+                    client_id: defaultClient?.id || 1,
                     status: "pending",
                     source: "manual",
                 };
 
-                const result = await appointmentsServices.createAppointment(appointmentPayload);
-                if (result.appointment) {
-                    setEvents((current) => [
-                        ...current,
-                        {
-                            id: String(result.appointment.id),
-                            title: `${client.full_name} - ${service.title}`,
-                            start: result.appointment.start_time,
-                            end: result.appointment.end_time,
-                            extendedProps: {
-                                status: result.appointment.status,
-                                client_id: client.id,
-                                service_id: service.id,
+                console.log("1. Intentando crear cita con estos datos:", appointmentPayload);
+
+                try {
+                    const result = await appointmentsServices.createAppointment(appointmentPayload);
+                    console.log("2. Respuesta de Flask:", result);
+
+                    if (result && result.appointment) {
+                        setEvents((current) => [
+                            ...current,
+                            {
+                                id: String(result.appointment.id),
+                                title: `${defaultClient.full_name} - ${defaultService.title}`,
+                                start: result.appointment.start_time,
+                                end: result.appointment.end_time,
+                                extendedProps: {
+                                    status: result.appointment.status,
+                                    client_id: defaultClient.id,
+                                    service_id: defaultService.id,
+                                },
+                                className: statusClass[result.appointment.status] || "bg-secondary",
                             },
-                            className: statusClass[result.appointment.status] || "bg-secondary",
-                        },
-                    ]);
+                        ]);
+                        selectionInfo.view.calendar.unselect();
+                        
+                        // Avisamos a la vista principal para que actualice la tabla
+                        if (onAppointmentChange) onAppointmentChange();
+                    } else {
+                        alert("❌ Flask rechazó la cita. Revisa la consola (F12) para ver el error exacto.");
+                        selectionInfo.view.calendar.unselect();
+                    }
+                } catch (error) {
+                    console.error("Error crítico al crear la cita:", error);
+                    alert("❌ Error de red. No se pudo contactar al servidor.");
+                    selectionInfo.view.calendar.unselect();
                 }
             },
+
+            // --- MOVER CITA ---
             eventDrop: async (eventDropInfo) => {
                 const event = eventDropInfo.event;
+                const end_time = event.end ? event.end.toISOString() : event.start.toISOString();
+
                 const appointmentPayload = {
                     start_time: event.start.toISOString(),
-                    end_time: event.end.toISOString(),
+                    end_time: end_time,
                     status: event.extendedProps.status || "pending",
-                    service_id: event.extendedProps.service_id || defaultService.id,
-                    user_id: userId,
-                    client_id: event.extendedProps.client_id || defaultClient.id,
+                    service_id: event.extendedProps.service_id || defaultService.id || 1,
+                    user_id: userId || 1,
+                    client_id: event.extendedProps.client_id || defaultClient.id || 1,
                     source: "manual",
                 };
-                await appointmentsServices.updateAppointment(event.id, appointmentPayload);
+                try {
+                    await appointmentsServices.updateAppointment(event.id, appointmentPayload);
+                    if (onAppointmentChange) onAppointmentChange();
+                } catch (error) {
+                    console.error("Error al mover la cita:", error);
+                    eventDropInfo.revert();
+                }
             },
+
+            // --- CAMBIAR DURACIÓN ---
             eventResize: async (eventResizeInfo) => {
                 const event = eventResizeInfo.event;
+                const end_time = event.end ? event.end.toISOString() : event.start.toISOString();
+
                 const appointmentPayload = {
                     start_time: event.start.toISOString(),
-                    end_time: event.end.toISOString(),
+                    end_time: end_time,
                     status: event.extendedProps.status || "pending",
-                    service_id: event.extendedProps.service_id || defaultService.id,
-                    user_id: userId,
-                    client_id: event.extendedProps.client_id || defaultClient.id,
+                    service_id: event.extendedProps.service_id || defaultService.id || 1,
+                    user_id: userId || 1,
+                    client_id: event.extendedProps.client_id || defaultClient.id || 1,
                     source: "manual",
                 };
-                await appointmentsServices.updateAppointment(event.id, appointmentPayload);
+                try {
+                    await appointmentsServices.updateAppointment(event.id, appointmentPayload);
+                    if (onAppointmentChange) onAppointmentChange();
+                } catch (error) {
+                    console.error("Error al redimensionar la cita:", error);
+                    eventResizeInfo.revert();
+                }
             },
+
+            // --- BORRAR CITA ---
             eventClick: async (clickInfo) => {
                 const appointmentId = clickInfo.event.id;
                 const confirmed = window.confirm("¿Eliminar esta cita?");
                 if (confirmed) {
-                    const success = await appointmentsServices.deleteAppointment(appointmentId);
-                    if (success) {
-                        clickInfo.event.remove();
+                    try {
+                        const success = await appointmentsServices.deleteAppointment(appointmentId);
+                        if (success) {
+                            clickInfo.event.remove();
+                            if (onAppointmentChange) onAppointmentChange();
+                        }
+                    } catch (error) {
+                        console.error("Error al borrar cita:", error);
                     }
                 }
             },
+
             eventContent: function (arg) {
                 return (
-                    <div>
-                        <b>{arg.event.title}</b>
-                        <div className="small text-muted">{arg.event.extendedProps.status}</div>
+                    <div className="p-1">
+                        <b className="d-block text-truncate">{arg.event.title}</b>
+                        <div className="small text-white opacity-75">{arg.event.extendedProps.status}</div>
                     </div>
                 );
             },
         }),
-        [clients, services, userId],
+        [clients, services, userId, defaultClient, defaultService, onAppointmentChange],
     );
 
     return (
         <div>
-            {loading && <div className="text-center py-3">Cargando agenda...</div>}
+            {loading && <div className="text-center py-3 text-primary">Cargando agenda...</div>}
             <FullCalendar {...calendarOptions} events={events} height={600} />
             <p className="mt-3 small text-muted">Seleccione un rango para crear una cita. Arrastre o cambie tamaño sobre el evento para actualizarlo. Haga clic en un evento para borrarlo.</p>
         </div>

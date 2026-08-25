@@ -1,5 +1,3 @@
-// Import necessary components and functions from react-router-dom.
-
 import {
   createBrowserRouter,
   createRoutesFromElements,
@@ -16,6 +14,7 @@ import { PrivateRoute } from "./components/PrivateRoute";
 import { ShowClients } from "./pages/ShowClients";
 import { ResetPass } from "./pages/ResetPass";
 import { TokenReset } from "./components/TokenReset";
+import { AppointmentsView } from "./pages/AppointmentsView"; // <-- Importamos la nueva vista
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -24,6 +23,7 @@ export const router = createBrowserRouter(
       <Route path="/single/:theId" element={<Single />} />
       <Route path="/demo" element={<Demo />} />
       <Route path="/professional" element={<PrivateRoute><Professional /></PrivateRoute>} />
+      <Route path="/appointments" element={<PrivateRoute><AppointmentsView /></PrivateRoute>} /> {/* <-- Nueva ruta */}
       <Route path="/login" element={<Login />} />
       <Route path="/signin" element={<Signin />} />
       <Route path="/show-clients" element={<PrivateRoute><ShowClients /></PrivateRoute>} />
