@@ -72,9 +72,9 @@ export const AdminUsersView = () => {
                 category: formData.category || "",
                 biografi: formData.biografi || ""
             };
-
+            const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://127.0.0.1:3001";
             // USAR SIEMPRE RUTA RELATIVA PURA PARA EVITAR CORS EN CODESPACE
-            const response = await fetch("/api/signin", {
+            const response = await fetch(backendUrl+"/api/signin", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"

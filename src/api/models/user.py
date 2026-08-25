@@ -7,8 +7,6 @@ from api.models import db
 class UserRole(enum.Enum):
     admin = "admin"
     professional = "professional"
-    profesional = "profesional"
-    user = "user"
 
 class User(db.Model):
     __tablename__ = "user"
@@ -16,11 +14,11 @@ class User(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     role: Mapped[UserRole] = mapped_column(Enum(UserRole), nullable=False)
     email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
-    password: Mapped[str] = mapped_column(String(120), nullable=False)
+    password: Mapped[str] = mapped_column(String(255), nullable=False)
     name: Mapped[str] = mapped_column(String(30), nullable=False)
     last_name: Mapped[str] = mapped_column(String(30), nullable=False)
-    biografi: Mapped[str] = mapped_column(String(255))
-    category: Mapped[str] = mapped_column(String(120))
+    biografi: Mapped[str] = mapped_column(String(255), nullable=True)
+    category: Mapped[str] = mapped_column(String(120), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     update_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
