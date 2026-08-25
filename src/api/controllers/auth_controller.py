@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from api.models.user import UserRole
-from api.services.user_service import get_user_by_email, create_user, patch_user
+from api.services.user_service import get_user_by_email, create_user, patch_user, get_all_user
 from api.models import db
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from werkzeug.security import check_password_hash
@@ -70,3 +70,7 @@ def get_user_by_email_controller():
     credentials = request.get_json(silent=True) or {}
     user = get_user_by_email(credentials.get("email"))
     return jsonify({"user": user.serialize()}), 200
+
+def get_all_user_controller():
+    people = get_all_user()
+    return jsonify(people), 200

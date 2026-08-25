@@ -62,3 +62,7 @@ def patch_user(user_id):
     db.session.commit()
 
     return user.serialize()
+def get_all_user():
+    users = User.query.all()
+    return [user.serialize() for user in users]
+
