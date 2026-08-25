@@ -1,19 +1,19 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import servicesServices from "../services/ServicesServices";
+import appointmentsServices from "../services/AppointmentServices.jsx";
 import toast from "react-hot-toast";
 import { SquarePen, Trash2 } from "lucide-react";
 import { Services } from "../components/Services.jsx";
 import ProfessionalCalendar from "../components/ProfessionalCalendar.jsx";
 import { Clients } from "../components/Clients.jsx";
 
-
 export const Professional = () => {
-    const { store, dispatch } = useGlobalReducer()
+    const { store, dispatch } = useGlobalReducer();
+    const navigate = useNavigate();
 
-
-    const profile = store.user
+    const profile = store.user || {};
     const services = Array.isArray(store.servicesList) && store.servicesList.length > 0
         ? store.servicesList[0]
         : [];
@@ -21,9 +21,51 @@ export const Professional = () => {
     const clients = Array.isArray(store.clientsList) && store.clientsList.length > 0
         ? store.clientsList[0]
         : [];
-    const appointments = []
 
+    const [appointments, setAppointments] = useState([]);
+    const [loadingAppointments, setLoadingAppointments] = useState(true);
+    const [refreshKey, setRefreshKey] = useState(0); // Estado para sincronizar el calendario
 
+    const userId = profile?.id;
+
+    // --- Cargar las citas desde el backend ---
+    const fetchAppointmentsList = async () => {
+        if (!userId) {
+            setLoadingAppointments(false);
+            return;
+        }
+        try {
+            setLoadingAppointments(true);
+            const response = await appointmentsServices.getAppointmentsByUser(userId);
+            setAppointments(response?.appointments || []);
+        } catch (error) {
+            console.error("Error al cargar las citas para la tabla:", error);
+        } finally {
+            setLoadingAppointments(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchAppointmentsList();
+    }, [userId]);
+
+    // --- Función para eliminar una cita directamente desde la tabla ---
+    const handleDeleteAppointment = async (appointmentId) => {
+        const confirmed = window.confirm("¿Estás seguro de que deseas eliminar esta cita?");
+        if (!confirmed) return;
+
+        try {
+            const success = await appointmentsServices.deleteAppointment(appointmentId);
+            if (success) {
+                setAppointments(prev => prev.filter(app => app.id !== appointmentId));
+                setRefreshKey(prev => prev + 1); // Forzamos la actualización del calendario de abajo
+                toast.success("Cita eliminada correctamente");
+            }
+        } catch (error) {
+            console.error("Error al borrar cita desde la tabla:", error);
+            toast.error("No se pudo eliminar la cita");
+        }
+    };
 
     return (
         <>
@@ -33,7 +75,10 @@ export const Professional = () => {
                         <h1 className="display-6">Dashboard profesional</h1>
                         <p className="text-muted">Resumen de citas, servicios y clientes.</p>
                     </div>
-                    <Link to="/" className="btn btn-outline-primary">Volver al inicio</Link>
+                    <div>
+                        <Link to="/admin/users" className="btn btn-outline-dark me-2">Ver Usuarios (Admin)</Link>
+                        <Link to="/" className="btn btn-outline-primary">Volver al inicio</Link>
+                    </div>
                 </div>
 
                 <div className="row gy-4">
@@ -41,10 +86,9 @@ export const Professional = () => {
                         <div className="card shadow-sm">
                             <div className="card-body">
                                 <h5 className="card-title">Perfil</h5>
-                                <p className="mb-1"><strong>Nombre: </strong>{`${profile.name} ${profile.last_name}`}</p>
+                                <p className="mb-1"><strong>Nombre: </strong>{`${profile.name || ''} ${profile.last_name || ''}`}</p>
                                 <p className="mb-1"><strong>Categoría:</strong> {profile.category}</p>
                                 <p className="mb-1"><strong>Email:</strong> {profile.email}</p>
-                                {/* <p className="mb-1"><strong>Teléfono:</strong> {profile.phone}</p> */}
                                 <p className="mb-0"><strong>Rol:</strong> {profile.role}</p>
                             </div>
                         </div>
@@ -64,7 +108,7 @@ export const Professional = () => {
                                 <div className="card text-white bg-success h-100 shadow-sm">
                                     <div className="card-body">
                                         <h6 className="card-title">Servicios</h6>
-                                        <p className="display-6 mb-0">{services.length ?? "Falta añadir"}</p>
+                                        <p className="display-6 mb-0">{services.length || "0"}</p>
                                     </div>
                                 </div>
                             </div>
@@ -72,7 +116,7 @@ export const Professional = () => {
                                 <div className="card text-white bg-info h-100 shadow-sm">
                                     <div className="card-body">
                                         <h6 className="card-title">Próximas citas</h6>
-                                        <p className="display-6 mb-0">{profile.upcomingAppointments ?? "Falta añadir"}</p>
+                                        <p className="display-6 mb-0">{appointments.length}</p>
                                     </div>
                                 </div>
                             </div>
@@ -93,7 +137,12 @@ export const Professional = () => {
                     <div className="card-body">
                         <div className="d-flex justify-content-between align-items-center mb-3">
                             <h5 className="card-title mb-0">Próximas citas</h5>
-                            <button className="btn btn-sm btn-outline-secondary">Gestionar agenda</button>
+                            <button
+                                className="btn btn-sm btn-outline-secondary"
+                                onClick={() => navigate("/appointments")}
+                            >
+                                Gestionar agenda
+                            </button>
                         </div>
                         <div className="table-responsive">
                             <table className="table table-hover align-middle mb-0">
@@ -104,22 +153,117 @@ export const Professional = () => {
                                         <th>Servicio</th>
                                         <th>Hora</th>
                                         <th>Estado</th>
+                                        <th className="text-end">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {appointments.map(appointment => (
-                                        <tr key={appointment.id}>
-                                            <td>{appointment.id}</td>
-                                            <td>{appointment.client}</td>
-                                            <td>{appointment.service}</td>
-                                            <td>{appointment.time}</td>
-                                            <td>
-                                                <span className={`badge ${appointment.status === "Confirmado" ? "bg-success" : appointment.status === "Pendiente" ? "bg-warning text-dark" : "bg-danger"}`}>
-                                                    {appointment.status}
-                                                </span>
-                                            </td>
+                                    {loadingAppointments ? (
+                                        <tr>
+                                            <td colSpan="6" className="text-center py-3 text-muted">Cargando citas...</td>
                                         </tr>
-                                    ))}
+                                    ) : appointments.length === 0 ? (
+                                        <tr>
+                                            <td colSpan="6" className="text-center py-3 text-muted">No hay citas registradas todavía.</td>
+                                        </tr>
+                                    ) : (
+                                        appointments.map(appointment => {
+                                            const client = clients.find(c => c.id === appointment.client_id);
+                                            const formattedDate = new Date(appointment.start_time).toLocaleString();
+
+                                            return (
+                                                <tr key={appointment.id}>
+                                                    <td>{appointment.id}</td>
+                                                    <td>{client ? client.full_name : `Cliente #${appointment.client_id}`}</td>
+
+                                                    {/* MODIFICAR SERVICIO DIRECTAMENTE */}
+                                                    <td>
+                                                        <select
+                                                            className="form-select form-select-sm"
+                                                            value={appointment.service_id}
+                                                            onChange={async (e) => {
+                                                                const newServiceId = Number(e.target.value);
+                                                                try {
+                                                                    const payload = {
+                                                                        start_time: appointment.start_time,
+                                                                        end_time: appointment.end_time,
+                                                                        status: appointment.status,
+                                                                        service_id: newServiceId,
+                                                                        user_id: userId,
+                                                                        client_id: appointment.client_id,
+                                                                        source: "manual"
+                                                                    };
+                                                                    await appointmentsServices.updateAppointment(appointment.id, payload);
+                                                                    setAppointments(prev => prev.map(app =>
+                                                                        app.id === appointment.id ? { ...app, service_id: newServiceId } : app
+                                                                    ));
+                                                                    setRefreshKey(prev => prev + 1); // Actualiza el calendario
+                                                                    toast.success("Servicio actualizado con éxito");
+                                                                } catch (error) {
+                                                                    console.error("Error al actualizar servicio:", error);
+                                                                    toast.error("No se pudo actualizar el servicio");
+                                                                }
+                                                            }}
+                                                        >
+                                                            {services.map(service => (
+                                                                <option key={service.id} value={service.id}>
+                                                                    {service.title}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </td>
+
+                                                    <td>{formattedDate}</td>
+
+                                                    {/* MODIFICAR ESTADO DIRECTAMENTE */}
+                                                    <td>
+                                                        <select
+                                                            className={`form-select form-select-sm fw-bold ${appointment.status === "confirmed" ? "text-success bg-light" :
+                                                                    appointment.status === "pending" ? "text-warning bg-light" : "text-danger bg-light"
+                                                                }`}
+                                                            value={appointment.status}
+                                                            onChange={async (e) => {
+                                                                const newStatus = e.target.value;
+                                                                try {
+                                                                    const payload = {
+                                                                        start_time: appointment.start_time,
+                                                                        end_time: appointment.end_time,
+                                                                        status: newStatus,
+                                                                        service_id: appointment.service_id,
+                                                                        user_id: userId,
+                                                                        client_id: appointment.client_id,
+                                                                        source: "manual"
+                                                                    };
+                                                                    await appointmentsServices.updateAppointment(appointment.id, payload);
+                                                                    setAppointments(prev => prev.map(app =>
+                                                                        app.id === appointment.id ? { ...app, status: newStatus } : app
+                                                                    ));
+                                                                    setRefreshKey(prev => prev + 1); // Actualiza el calendario
+                                                                    toast.success("Estado actualizado con éxito");
+                                                                } catch (error) {
+                                                                    console.error("Error al actualizar estado:", error);
+                                                                    toast.error("No se pudo actualizar el estado");
+                                                                }
+                                                            }}
+                                                        >
+                                                            <option value="pending">Pendiente</option>
+                                                            <option value="confirmed">Confirmado</option>
+                                                            <option value="canceled">Cancelado</option>
+                                                        </select>
+                                                    </td>
+
+                                                    <td className="text-end">
+                                                        <button
+                                                            className="btn btn-outline-danger btn-sm"
+                                                            onClick={() => handleDeleteAppointment(appointment.id)}
+                                                            title="Eliminar cita"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -131,7 +275,13 @@ export const Professional = () => {
                                         <small className="text-muted">Crea, edita y elimina citas directamente sobre el calendario.</small>
                                     </div>
                                 </div>
-                                <ProfessionalCalendar services={services} clients={clients} />
+                                <ProfessionalCalendar
+                                    services={services}
+                                    clients={clients}
+                                    userId={profile?.id || 1}
+                                    onAppointmentChange={fetchAppointmentsList}
+                                    refreshTrigger={refreshKey} // Sincronización bidireccional activada
+                                />
                             </div>
                         </div>
                     </div>
@@ -140,3 +290,5 @@ export const Professional = () => {
         </>
     );
 };
+
+export default Professional;

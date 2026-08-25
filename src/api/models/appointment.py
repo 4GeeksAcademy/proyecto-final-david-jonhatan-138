@@ -54,10 +54,11 @@ class Appointment(db.Model):
         nullable=False
     )
 
-    calendly_event_uri: Mapped[str] = mapped_column(String(255))
-    calendly_invitee_uri: Mapped[str] = mapped_column(String(255))
-    google_calendar_event_id: Mapped[str] = mapped_column(String(255))
-    cancel_url: Mapped[str] = mapped_column(String(255))
+    # CAMPOS EXTERNOS CONFIGURADOS COMO OPCIONALES (nullable=True)
+    calendly_event_uri: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    calendly_invitee_uri: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    google_calendar_event_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    cancel_url: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow
