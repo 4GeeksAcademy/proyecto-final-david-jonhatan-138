@@ -48,7 +48,7 @@ export const Professional = () => {
         fetchAppointmentsList();
     }, [userId]);
 
-    // --- NUEVO: Función para eliminar una cita directamente desde la tabla ---
+    // --- Función para eliminar una cita directamente desde la tabla ---
     const handleDeleteAppointment = async (appointmentId) => {
         const confirmed = window.confirm("¿Estás seguro de que deseas eliminar esta cita?");
         if (!confirmed) return;
@@ -56,7 +56,6 @@ export const Professional = () => {
         try {
             const success = await appointmentsServices.deleteAppointment(appointmentId);
             if (success) {
-                // Actualizamos el estado localmente para que desaparezca al instante de la tabla
                 setAppointments(prev => prev.filter(app => app.id !== appointmentId));
                 toast.success("Cita eliminada correctamente");
             }
@@ -74,7 +73,10 @@ export const Professional = () => {
                         <h1 className="display-6">Dashboard profesional</h1>
                         <p className="text-muted">Resumen de citas, servicios y clientes.</p>
                     </div>
-                    <Link to="/" className="btn btn-outline-primary">Volver al inicio</Link>
+                    <div>
+                        <Link to="/admin/users" className="btn btn-outline-dark me-2">Ver Usuarios (Admin)</Link>
+                        <Link to="/" className="btn btn-outline-primary">Volver al inicio</Link>
+                    </div>
                 </div>
 
                 <div className="row gy-4">
@@ -164,22 +166,89 @@ export const Professional = () => {
                                     ) : (
                                         appointments.map(appointment => {
                                             const client = clients.find(c => c.id === appointment.client_id);
-                                            const service = services.find(s => s.id === appointment.service_id);
                                             const formattedDate = new Date(appointment.start_time).toLocaleString();
 
                                             return (
                                                 <tr key={appointment.id}>
                                                     <td>{appointment.id}</td>
                                                     <td>{client ? client.full_name : `Cliente #${appointment.client_id}`}</td>
-                                                    <td>{service ? service.title : `Servicio #${appointment.service_id}`}</td>
-                                                    <td>{formattedDate}</td>
+                                                    
+                                                    {/* MODIFICAR SERVICIO DIRECTAMENTE */}
                                                     <td>
-                                                        <span className={`badge ${appointment.status === "confirmed" ? "bg-success" : appointment.status === "pending" ? "bg-warning text-dark" : "bg-danger"}`}>
-                                                            {appointment.status}
-                                                        </span>
+                                                        <select 
+                                                            className="form-select form-select-sm"
+                                                            value={appointment.service_id}
+                                                            onChange={async (e) => {
+                                                                const newServiceId = Number(e.target.value);
+                                                                try {
+                                                                    const payload = {
+                                                                        start_time: appointment.start_time,
+                                                                        end_time: appointment.end_time,
+                                                                        status: appointment.status,
+                                                                        service_id: newServiceId,
+                                                                        user_id: userId,
+                                                                        client_id: appointment.client_id,
+                                                                        source: "manual"
+                                                                    };
+                                                                    await appointmentsServices.updateAppointment(appointment.id, payload);
+                                                                    setAppointments(prev => prev.map(app => 
+                                                                        app.id === appointment.id ? { ...app, service_id: newServiceId } : app
+                                                                    ));
+                                                                    toast.success("Servicio actualizado con éxito");
+                                                                } catch (error) {
+                                                                    console.error("Error al actualizar servicio:", error);
+                                                                    toast.error("No se pudo actualizar el servicio");
+                                                                }
+                                                            }}
+                                                        >
+                                                            {services.map(service => (
+                                                                <option key={service.id} value={service.id}>
+                                                                    {service.title}
+                                                                </option>
+                                                            ))}
+                                                        </select>
                                                     </td>
+
+                                                    <td>{formattedDate}</td>
+
+                                                    {/* MODIFICAR ESTADO DIRECTAMENTE */}
+                                                    <td>
+                                                        <select 
+                                                            className={`form-select form-select-sm fw-bold ${
+                                                                appointment.status === "confirmed" ? "text-success bg-light" : 
+                                                                appointment.status === "pending" ? "text-warning bg-light" : "text-danger bg-light"
+                                                            }`}
+                                                            value={appointment.status}
+                                                            onChange={async (e) => {
+                                                                const newStatus = e.target.value;
+                                                                try {
+                                                                    const payload = {
+                                                                        start_time: appointment.start_time,
+                                                                        end_time: appointment.end_time,
+                                                                        status: newStatus,
+                                                                        service_id: appointment.service_id,
+                                                                        user_id: userId,
+                                                                        client_id: appointment.client_id,
+                                                                        source: "manual"
+                                                                    };
+                                                                    await appointmentsServices.updateAppointment(appointment.id, payload);
+                                                                    setAppointments(prev => prev.map(app => 
+                                                                        app.id === appointment.id ? { ...app, status: newStatus } : app
+                                                                    ));
+                                                                    toast.success("Estado actualizado con éxito");
+                                                                } catch (error) {
+                                                                    console.error("Error al actualizar estado:", error);
+                                                                    toast.error("No se pudo actualizar el estado");
+                                                                }
+                                                            }}
+                                                        >
+                                                            <option value="pending">Pendiente</option>
+                                                            <option value="confirmed">Confirmado</option>
+                                                            <option value="canceled">Cancelado</option>
+                                                        </select>
+                                                    </td>
+
                                                     <td className="text-end">
-                                                        {/* Botón para eliminar directamente desde la tabla */}
                                                         <button 
                                                             className="btn btn-outline-danger btn-sm"
                                                             onClick={() => handleDeleteAppointment(appointment.id)}
@@ -217,3 +286,5 @@ export const Professional = () => {
         </>
     );
 };
+
+export default Professional;
