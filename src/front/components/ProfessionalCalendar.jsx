@@ -11,6 +11,20 @@ const statusClass = {
     canceled: "bg-danger",
 };
 
+// --- Función para enviar la hora local exacta sin desfases de zona horaria ---
+const toLocalISOString = (date) => {
+    const pad = (n) => String(n).padStart(2, '0');
+
+    const year = date.getFullYear();
+    const month = pad(date.getMonth() + 1);
+    const day = pad(date.getDate());
+    const hours = pad(date.getHours());
+    const minutes = pad(date.getMinutes());
+    const seconds = pad(date.getSeconds());
+
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+};
+
 const ProfessionalCalendar = ({ services, clients, userId, onAppointmentChange }) => {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -79,8 +93,8 @@ const ProfessionalCalendar = ({ services, clients, userId, onAppointmentChange }
                 const end = selectionInfo.end;
 
                 const appointmentPayload = {
-                    start_time: start.toISOString(),
-                    end_time: end.toISOString(),
+                    start_time: toLocalISOString(start),
+                    end_time: toLocalISOString(end),
                     service_id: defaultService?.id || 1,
                     user_id: userId || 1,
                     client_id: defaultClient?.id || 1,
@@ -111,8 +125,7 @@ const ProfessionalCalendar = ({ services, clients, userId, onAppointmentChange }
                             },
                         ]);
                         selectionInfo.view.calendar.unselect();
-                        
-                        // Avisamos a la vista principal para que actualice la tabla
+
                         if (onAppointmentChange) onAppointmentChange();
                     } else {
                         alert("❌ Flask rechazó la cita. Revisa la consola (F12) para ver el error exacto.");
@@ -128,11 +141,11 @@ const ProfessionalCalendar = ({ services, clients, userId, onAppointmentChange }
             // --- MOVER CITA ---
             eventDrop: async (eventDropInfo) => {
                 const event = eventDropInfo.event;
-                const end_time = event.end ? event.end.toISOString() : event.start.toISOString();
+                const endDate = event.end ? event.end : new Date(event.start.getTime() + 60 * 60 * 1000);
 
                 const appointmentPayload = {
-                    start_time: event.start.toISOString(),
-                    end_time: end_time,
+                    start_time: toLocalISOString(event.start),
+                    end_time: toLocalISOString(endDate),
                     status: event.extendedProps.status || "pending",
                     service_id: event.extendedProps.service_id || defaultService.id || 1,
                     user_id: userId || 1,
@@ -151,11 +164,11 @@ const ProfessionalCalendar = ({ services, clients, userId, onAppointmentChange }
             // --- CAMBIAR DURACIÓN ---
             eventResize: async (eventResizeInfo) => {
                 const event = eventResizeInfo.event;
-                const end_time = event.end ? event.end.toISOString() : event.start.toISOString();
+                const endDate = event.end ? event.end : new Date(event.start.getTime() + 60 * 60 * 1000);
 
                 const appointmentPayload = {
-                    start_time: event.start.toISOString(),
-                    end_time: end_time,
+                    start_time: toLocalISOString(event.start),
+                    end_time: toLocalISOString(endDate),
                     status: event.extendedProps.status || "pending",
                     service_id: event.extendedProps.service_id || defaultService.id || 1,
                     user_id: userId || 1,
