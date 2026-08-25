@@ -13,7 +13,7 @@ export const Professional = () => {
     const { store, dispatch } = useGlobalReducer();
     const navigate = useNavigate();
 
-    const profile = store.user || {}; 
+    const profile = store.user || {};
     const services = Array.isArray(store.servicesList) && store.servicesList.length > 0
         ? store.servicesList[0]
         : [];
@@ -24,6 +24,7 @@ export const Professional = () => {
 
     const [appointments, setAppointments] = useState([]);
     const [loadingAppointments, setLoadingAppointments] = useState(true);
+    const [refreshKey, setRefreshKey] = useState(0); // Estado para sincronizar el calendario
 
     const userId = profile?.id;
 
@@ -57,6 +58,7 @@ export const Professional = () => {
             const success = await appointmentsServices.deleteAppointment(appointmentId);
             if (success) {
                 setAppointments(prev => prev.filter(app => app.id !== appointmentId));
+                setRefreshKey(prev => prev + 1); // Forzamos la actualización del calendario de abajo
                 toast.success("Cita eliminada correctamente");
             }
         } catch (error) {
@@ -135,9 +137,9 @@ export const Professional = () => {
                     <div className="card-body">
                         <div className="d-flex justify-content-between align-items-center mb-3">
                             <h5 className="card-title mb-0">Próximas citas</h5>
-                            <button 
+                            <button
                                 className="btn btn-sm btn-outline-secondary"
-                                onClick={() => navigate("/appointments")} 
+                                onClick={() => navigate("/appointments")}
                             >
                                 Gestionar agenda
                             </button>
@@ -172,10 +174,10 @@ export const Professional = () => {
                                                 <tr key={appointment.id}>
                                                     <td>{appointment.id}</td>
                                                     <td>{client ? client.full_name : `Cliente #${appointment.client_id}`}</td>
-                                                    
+
                                                     {/* MODIFICAR SERVICIO DIRECTAMENTE */}
                                                     <td>
-                                                        <select 
+                                                        <select
                                                             className="form-select form-select-sm"
                                                             value={appointment.service_id}
                                                             onChange={async (e) => {
@@ -191,9 +193,10 @@ export const Professional = () => {
                                                                         source: "manual"
                                                                     };
                                                                     await appointmentsServices.updateAppointment(appointment.id, payload);
-                                                                    setAppointments(prev => prev.map(app => 
+                                                                    setAppointments(prev => prev.map(app =>
                                                                         app.id === appointment.id ? { ...app, service_id: newServiceId } : app
                                                                     ));
+                                                                    setRefreshKey(prev => prev + 1); // Actualiza el calendario
                                                                     toast.success("Servicio actualizado con éxito");
                                                                 } catch (error) {
                                                                     console.error("Error al actualizar servicio:", error);
@@ -213,11 +216,10 @@ export const Professional = () => {
 
                                                     {/* MODIFICAR ESTADO DIRECTAMENTE */}
                                                     <td>
-                                                        <select 
-                                                            className={`form-select form-select-sm fw-bold ${
-                                                                appointment.status === "confirmed" ? "text-success bg-light" : 
-                                                                appointment.status === "pending" ? "text-warning bg-light" : "text-danger bg-light"
-                                                            }`}
+                                                        <select
+                                                            className={`form-select form-select-sm fw-bold ${appointment.status === "confirmed" ? "text-success bg-light" :
+                                                                    appointment.status === "pending" ? "text-warning bg-light" : "text-danger bg-light"
+                                                                }`}
                                                             value={appointment.status}
                                                             onChange={async (e) => {
                                                                 const newStatus = e.target.value;
@@ -232,9 +234,10 @@ export const Professional = () => {
                                                                         source: "manual"
                                                                     };
                                                                     await appointmentsServices.updateAppointment(appointment.id, payload);
-                                                                    setAppointments(prev => prev.map(app => 
+                                                                    setAppointments(prev => prev.map(app =>
                                                                         app.id === appointment.id ? { ...app, status: newStatus } : app
                                                                     ));
+                                                                    setRefreshKey(prev => prev + 1); // Actualiza el calendario
                                                                     toast.success("Estado actualizado con éxito");
                                                                 } catch (error) {
                                                                     console.error("Error al actualizar estado:", error);
@@ -249,7 +252,7 @@ export const Professional = () => {
                                                     </td>
 
                                                     <td className="text-end">
-                                                        <button 
+                                                        <button
                                                             className="btn btn-outline-danger btn-sm"
                                                             onClick={() => handleDeleteAppointment(appointment.id)}
                                                             title="Eliminar cita"
@@ -277,6 +280,7 @@ export const Professional = () => {
                                     clients={clients}
                                     userId={profile?.id || 1}
                                     onAppointmentChange={fetchAppointmentsList}
+                                    refreshTrigger={refreshKey} // Sincronización bidireccional activada
                                 />
                             </div>
                         </div>

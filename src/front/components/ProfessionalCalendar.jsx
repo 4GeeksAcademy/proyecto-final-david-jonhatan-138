@@ -14,7 +14,7 @@ const statusClass = {
 // --- Función para enviar la hora local exacta sin desfases de zona horaria ---
 const toLocalISOString = (date) => {
     const pad = (n) => String(n).padStart(2, '0');
-
+    
     const year = date.getFullYear();
     const month = pad(date.getMonth() + 1);
     const day = pad(date.getDate());
@@ -25,7 +25,7 @@ const toLocalISOString = (date) => {
     return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
 };
 
-const ProfessionalCalendar = ({ services, clients, userId, onAppointmentChange }) => {
+const ProfessionalCalendar = ({ services, clients, userId, onAppointmentChange, refreshTrigger }) => {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -68,9 +68,10 @@ const ProfessionalCalendar = ({ services, clients, userId, onAppointmentChange }
         }
     };
 
+    // Se recarga si cambia el usuario, servicios, clientes o si el componente padre dispara un refreshTrigger
     useEffect(() => {
         fetchAppointments();
-    }, [userId, clients, services]);
+    }, [userId, clients, services, refreshTrigger]);
 
     const calendarOptions = useMemo(
         () => ({
@@ -102,11 +103,8 @@ const ProfessionalCalendar = ({ services, clients, userId, onAppointmentChange }
                     source: "manual",
                 };
 
-                console.log("1. Intentando crear cita con estos datos:", appointmentPayload);
-
                 try {
                     const result = await appointmentsServices.createAppointment(appointmentPayload);
-                    console.log("2. Respuesta de Flask:", result);
 
                     if (result && result.appointment) {
                         setEvents((current) => [
@@ -125,7 +123,7 @@ const ProfessionalCalendar = ({ services, clients, userId, onAppointmentChange }
                             },
                         ]);
                         selectionInfo.view.calendar.unselect();
-
+                        
                         if (onAppointmentChange) onAppointmentChange();
                     } else {
                         alert("❌ Flask rechazó la cita. Revisa la consola (F12) para ver el error exacto.");
