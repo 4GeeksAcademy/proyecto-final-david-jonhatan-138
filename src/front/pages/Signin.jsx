@@ -6,7 +6,7 @@ import { loginService, signinService } from "../services/AuthServices";
 export default function Signin() {
     const { dispatch } = useGlobalReducer();
     const navigate = useNavigate();
-    const [form, setForm] = useState({ email: "", name: "", last_name: "", password: "", category: "", biografi: "", role: "profesional"});
+    const [form, setForm] = useState({ email: "", name: "", last_name: "", password: "", category: "", biografi: "", role: "professional"});
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });

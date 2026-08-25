@@ -42,20 +42,18 @@ def signup():
     if get_user_by_email(user_data["email"]) is not None:
         return jsonify({"message": "Email is already registered"}), 409
 
-    try:
-        role = UserRole(user_data["role"])
-    except ValueError:
+    if user_data["role"] != "admin" and user_data["role"] != "professional":
         return jsonify({"message": "Invalid role"}), 400
 
     # create_user ya hace el add y el commit internamente de forma segura
     user = create_user(
-        role=role,
+        role=user_data["role"],
         email=user_data["email"],
         password=user_data["password"],
         name=user_data["name"],
         last_name=user_data["last_name"],
-        biografi=user_data.get("biografi"),
-        category=user_data.get("category")
+        biografi=user_data["biografi"],
+        category=user_data["category"]
     )
 
     return jsonify({"user": user.serialize()}), 201
