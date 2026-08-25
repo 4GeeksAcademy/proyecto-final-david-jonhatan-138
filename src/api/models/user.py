@@ -6,7 +6,9 @@ from api.models import db
 
 class UserRole(enum.Enum):
     admin = "admin"
+    professional = "professional"
     profesional = "profesional"
+    user = "user"
 
 class User(db.Model):
     __tablename__ = "user"

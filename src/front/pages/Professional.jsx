@@ -1,10 +1,9 @@
 import { Link, useNavigate } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { useState, useEffect } from "react";
-import servicesServices from "../services/ServicesServices";
 import appointmentsServices from "../services/AppointmentServices.jsx";
 import toast from "react-hot-toast";
-import { SquarePen, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { Services } from "../components/Services.jsx";
 import ProfessionalCalendar from "../components/ProfessionalCalendar.jsx";
 import { Clients } from "../components/Clients.jsx";
@@ -13,7 +12,7 @@ export const Professional = () => {
     const { store, dispatch } = useGlobalReducer();
     const navigate = useNavigate();
 
-    const profile = store.user || {};
+    const profile = store.user || {}; 
     const services = Array.isArray(store.servicesList) && store.servicesList.length > 0
         ? store.servicesList[0]
         : [];
@@ -22,22 +21,31 @@ export const Professional = () => {
         ? store.clientsList[0]
         : [];
 
-    const [appointments, setAppointments] = useState([]);
-    const [loadingAppointments, setLoadingAppointments] = useState(true);
-    const [refreshKey, setRefreshKey] = useState(0); // Estado para sincronizar el calendario
+    // --- LEEMOS LAS CITAS DEL STORE GLOBAL ---
+    const appointments = Array.isArray(store.appointmentsList) ? store.appointmentsList : [];
+    
+    const [loadingAppointments, setLoadingAppointments] = useState(false);
+    const [refreshKey, setRefreshKey] = useState(0);
 
     const userId = profile?.id;
 
-    // --- Cargar las citas desde el backend ---
-    const fetchAppointmentsList = async () => {
-        if (!userId) {
-            setLoadingAppointments(false);
+    // --- CARGAR CITAS USANDO DISPATCH ---
+    const fetchAppointmentsList = async (force = false) => {
+        if (!userId) return;
+
+        if (!force && store.appointmentsList && store.appointmentsList.length > 0) {
             return;
         }
+
         try {
             setLoadingAppointments(true);
             const response = await appointmentsServices.getAppointmentsByUser(userId);
-            setAppointments(response?.appointments || []);
+            const fetchedAppointments = response?.appointments || [];
+
+            dispatch({
+                type: "SET_APPOINTMENTS",
+                payload: fetchedAppointments
+            });
         } catch (error) {
             console.error("Error al cargar las citas para la tabla:", error);
         } finally {
@@ -49,7 +57,7 @@ export const Professional = () => {
         fetchAppointmentsList();
     }, [userId]);
 
-    // --- Función para eliminar una cita directamente desde la tabla ---
+    // --- ELIMINAR CITA ACTUALIZANDO EL STORE GLOBAL ---
     const handleDeleteAppointment = async (appointmentId) => {
         const confirmed = window.confirm("¿Estás seguro de que deseas eliminar esta cita?");
         if (!confirmed) return;
@@ -57,8 +65,13 @@ export const Professional = () => {
         try {
             const success = await appointmentsServices.deleteAppointment(appointmentId);
             if (success) {
-                setAppointments(prev => prev.filter(app => app.id !== appointmentId));
-                setRefreshKey(prev => prev + 1); // Forzamos la actualización del calendario de abajo
+                const updatedAppointments = appointments.filter(app => app.id !== appointmentId);
+                dispatch({
+                    type: "SET_APPOINTMENTS",
+                    payload: updatedAppointments
+                });
+                
+                setRefreshKey(prev => prev + 1);
                 toast.success("Cita eliminada correctamente");
             }
         } catch (error) {
@@ -76,7 +89,10 @@ export const Professional = () => {
                         <p className="text-muted">Resumen de citas, servicios y clientes.</p>
                     </div>
                     <div>
-                        <Link to="/admin/users" className="btn btn-outline-dark me-2">Ver Usuarios (Admin)</Link>
+                        {/* Botón condicional estricto para dueños */}
+                        {profile && profile.role === "admin" && (
+                            <Link to="/admin/users" className="btn btn-dark me-2">Panel Dueños (Admin)</Link>
+                        )}
                         <Link to="/" className="btn btn-outline-primary">Volver al inicio</Link>
                     </div>
                 </div>
@@ -137,9 +153,9 @@ export const Professional = () => {
                     <div className="card-body">
                         <div className="d-flex justify-content-between align-items-center mb-3">
                             <h5 className="card-title mb-0">Próximas citas</h5>
-                            <button
+                            <button 
                                 className="btn btn-sm btn-outline-secondary"
-                                onClick={() => navigate("/appointments")}
+                                onClick={() => navigate("/appointments")} 
                             >
                                 Gestionar agenda
                             </button>
@@ -174,10 +190,10 @@ export const Professional = () => {
                                                 <tr key={appointment.id}>
                                                     <td>{appointment.id}</td>
                                                     <td>{client ? client.full_name : `Cliente #${appointment.client_id}`}</td>
-
-                                                    {/* MODIFICAR SERVICIO DIRECTAMENTE */}
+                                                    
+                                                    {/* MODIFICAR SERVICIO */}
                                                     <td>
-                                                        <select
+                                                        <select 
                                                             className="form-select form-select-sm"
                                                             value={appointment.service_id}
                                                             onChange={async (e) => {
@@ -193,10 +209,13 @@ export const Professional = () => {
                                                                         source: "manual"
                                                                     };
                                                                     await appointmentsServices.updateAppointment(appointment.id, payload);
-                                                                    setAppointments(prev => prev.map(app =>
+                                                                    
+                                                                    const updated = appointments.map(app => 
                                                                         app.id === appointment.id ? { ...app, service_id: newServiceId } : app
-                                                                    ));
-                                                                    setRefreshKey(prev => prev + 1); // Actualiza el calendario
+                                                                    );
+                                                                    dispatch({ type: "SET_APPOINTMENTS", payload: updated });
+
+                                                                    setRefreshKey(prev => prev + 1);
                                                                     toast.success("Servicio actualizado con éxito");
                                                                 } catch (error) {
                                                                     console.error("Error al actualizar servicio:", error);
@@ -214,12 +233,13 @@ export const Professional = () => {
 
                                                     <td>{formattedDate}</td>
 
-                                                    {/* MODIFICAR ESTADO DIRECTAMENTE */}
+                                                    {/* MODIFICAR ESTADO */}
                                                     <td>
-                                                        <select
-                                                            className={`form-select form-select-sm fw-bold ${appointment.status === "confirmed" ? "text-success bg-light" :
-                                                                    appointment.status === "pending" ? "text-warning bg-light" : "text-danger bg-light"
-                                                                }`}
+                                                        <select 
+                                                            className={`form-select form-select-sm fw-bold ${
+                                                                appointment.status === "confirmed" ? "text-success bg-light" : 
+                                                                appointment.status === "pending" ? "text-warning bg-light" : "text-danger bg-light"
+                                                            }`}
                                                             value={appointment.status}
                                                             onChange={async (e) => {
                                                                 const newStatus = e.target.value;
@@ -234,10 +254,13 @@ export const Professional = () => {
                                                                         source: "manual"
                                                                     };
                                                                     await appointmentsServices.updateAppointment(appointment.id, payload);
-                                                                    setAppointments(prev => prev.map(app =>
+                                                                    
+                                                                    const updated = appointments.map(app => 
                                                                         app.id === appointment.id ? { ...app, status: newStatus } : app
-                                                                    ));
-                                                                    setRefreshKey(prev => prev + 1); // Actualiza el calendario
+                                                                    );
+                                                                    dispatch({ type: "SET_APPOINTMENTS", payload: updated });
+
+                                                                    setRefreshKey(prev => prev + 1);
                                                                     toast.success("Estado actualizado con éxito");
                                                                 } catch (error) {
                                                                     console.error("Error al actualizar estado:", error);
@@ -252,7 +275,7 @@ export const Professional = () => {
                                                     </td>
 
                                                     <td className="text-end">
-                                                        <button
+                                                        <button 
                                                             className="btn btn-outline-danger btn-sm"
                                                             onClick={() => handleDeleteAppointment(appointment.id)}
                                                             title="Eliminar cita"
@@ -279,8 +302,8 @@ export const Professional = () => {
                                     services={services}
                                     clients={clients}
                                     userId={profile?.id || 1}
-                                    onAppointmentChange={fetchAppointmentsList}
-                                    refreshTrigger={refreshKey} // Sincronización bidireccional activada
+                                    onAppointmentChange={() => fetchAppointmentsList(true)}
+                                    refreshTrigger={refreshKey}
                                 />
                             </div>
                         </div>
