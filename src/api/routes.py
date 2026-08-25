@@ -21,6 +21,7 @@ api = Blueprint('api', __name__)
 
 # Allow CORS requests to this API
 
+
 @api.route('/login', methods=['POST'])
 def login():
     return login_controller()
@@ -95,6 +96,7 @@ def delete_client(client_id):
 def patch_client(client_id):
     return ClientController.patch_client(client_id)
 
+
 @api.route('/services', methods=['GET'])
 def get_all_services():
     return ServiceController.get_all_services()
@@ -133,3 +135,54 @@ def mail_reset_pass():
 @api.route('/user-email', methods=['POST'])
 def get_user_by_email():
     return get_user_by_email_controller()
+
+# --- NUEVAS RUTAS PARA EL PANEL DE ADMINISTRACIÓN (DUEÑOS) ---
+
+
+@api.route('/user', methods=['GET'])
+def get_all_users():
+    """Endpoint para listar todos los usuarios en el panel de admin"""
+    from api.models.user import User
+    users = User.query.all()
+    return jsonify([user.serialize() for user in users]), 200
+
+
+@api.route('/admin/users', methods=['POST'])
+def admin_create_user():
+    """Endpoint exclusivo para que el admin cree usuarios con cualquier rol/suscripción"""
+    from api.models.user import User, db
+    from werkzeug.security import generate_password_hash
+    from flask import request, jsonify
+
+    data = request.get_json()
+    email = data.get("email")
+    password = data.get("password")
+    role = data.get("role", "professional")
+    subscription_status = data.get("subscription_status", "active")
+
+    if not email or not password:
+        return jsonify({"message": "Faltan campos obligatorios"}), 400
+
+    existing_user = User.query.filter_by(email=email).first()
+    if existing_user:
+        return jsonify({"message": "El correo ya está registrado"}), 400
+
+    hashed_password = generate_password_hash(password)
+    new_user = User(
+        email=email,
+        password=hashed_password,
+        name=data.get("name", ""),
+        last_name=data.get("last_name", ""),
+        role=role,
+        subscription_status=subscription_status,
+        category=data.get("category", ""),
+        is_active=True
+    )
+
+    db.session.add(new_user)
+    db.session.commit()
+
+    return jsonify({
+        "message": "Usuario creado con éxito por el administrador",
+        "user": new_user.serialize()
+    }), 201

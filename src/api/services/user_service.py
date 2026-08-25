@@ -1,5 +1,6 @@
 from api.models.user import db, User
-from flask import abort, request, jsonify
+from flask import request, jsonify
+from werkzeug.security import generate_password_hash
 
 
 def get_user_by_email(email: str):
@@ -7,15 +8,23 @@ def get_user_by_email(email: str):
 
 
 def create_user(role, email, password, name, last_name, biografi=None, category=None):
-    return User(
+    # Encriptamos la contraseña por seguridad antes de guardarla
+    hashed_password = generate_password_hash(password)
+    
+    new_user = User(
         role=role,
         email=email,
-        password=password,
+        password=hashed_password,
         name=name,
         last_name=last_name,
         biografi=biografi,
         category=category
     )
+    
+    db.session.add(new_user)
+    db.session.commit()
+    return new_user
+
 
 def patch_user(user_id):
     data = request.get_json(silent=True) or {}
@@ -24,15 +33,15 @@ def patch_user(user_id):
     if user is None:
         return jsonify({"message": "User not found"}), 404
 
-    # Actualizar solo los campos permitidos
+    # Actualizar campos permitidos (incluyendo rol y suscripción si llegan)
     if "name" in data:
         user.name = data["name"]
 
     if "last_name" in data:
         user.last_name = data["last_name"]
 
-    if "password" in data:
-        user.password = data["password"]
+    if "password" in data and data["password"]:
+        user.password = generate_password_hash(data["password"])
 
     if "category" in data:
         user.category = data["category"]
@@ -40,7 +49,16 @@ def patch_user(user_id):
     if "biografi" in data:
         user.biografi = data["biografi"]
 
+    if "role" in data:
+        from api.models.user import UserRole
+        try:
+            user.role = UserRole(data["role"])
+        except ValueError:
+            pass # Si mandan un rol inválido lo ignoramos
+
+    if "subscription_status" in data:
+        user.subscription_status = data["subscription_status"]
+
     db.session.commit()
 
     return user.serialize()
-

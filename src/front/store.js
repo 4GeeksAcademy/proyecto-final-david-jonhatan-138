@@ -5,6 +5,7 @@ export const initialStore = () => {
     isAuthenticated: !!localStorage.getItem("token"),
     clientsList: [],
     servicesList: [],
+    appointmentsList: [], // <--- 1. Añadido aquí para evitar que llegue undefined
   };
 };
 
@@ -44,7 +45,8 @@ export default function storeReducer(store, action = {}) {
           clientsList: [...clientsList],
         };
       }
-    case "deleteClientsList":
+      return store; // Añadido return de seguridad si no está autenticado
+    case "deleteClientsList": {
       const id_client = action.payload;
       const clientsListDelete = store.clientsList[0].filter(
         (client) => client.id !== id_client,
@@ -54,15 +56,17 @@ export default function storeReducer(store, action = {}) {
         ...store,
         clientsList: [clientsListDelete],
       };
-    case "addClientList":
-      const clientsListAdd = store.clientsList[0];
+    }
+    case "addClientList": {
+      const clientsListAdd = store.clientsList[0] || [];
       const client = action.payload;
       const newClientsList = [[...clientsListAdd, client]];
       return {
         ...store,
         clientsList: newClientsList,
       };
-    case "updateClientList":
+    }
+    case "updateClientList": {
       const updated = store.clientsList[0].map((c) =>
         c.id === action.payload.id ? action.payload : c,
       );
@@ -71,6 +75,7 @@ export default function storeReducer(store, action = {}) {
         ...store,
         clientsList: [updated],
       };
+    }
 
     case "setServices":
       if (store.isAuthenticated) {
@@ -80,8 +85,9 @@ export default function storeReducer(store, action = {}) {
           servicesList: [...servicesList],
         };
       }
+      return store;
 
-    case "deleteServicesList":
+    case "deleteServicesList": {
       const id_service = action.payload;
       const servicesListDelete = store.servicesList[0].filter(
         (service) => service.id !== id_service,
@@ -91,9 +97,10 @@ export default function storeReducer(store, action = {}) {
         ...store,
         servicesList: [servicesListDelete],
       };
+    }
 
-    case "addServiceList":
-      const servicesListAdd = store.servicesList[0];
+    case "addServiceList": {
+      const servicesListAdd = store.servicesList[0] || [];
       const service = action.payload;
       const newServicesList = [[...servicesListAdd, service]];
 
@@ -101,8 +108,9 @@ export default function storeReducer(store, action = {}) {
         ...store,
         servicesList: newServicesList,
       };
+    }
 
-    case "updateServiceList":
+    case "updateServiceList": {
       const updatedServices = store.servicesList[0].map((s) =>
         s.id === action.payload.id ? action.payload : s,
       );
@@ -110,6 +118,14 @@ export default function storeReducer(store, action = {}) {
       return {
         ...store,
         servicesList: [updatedServices],
+      };
+    }
+
+    // --- 2. CASOS AÑADIDOS PARA LAS CITAS ---
+    case "SET_APPOINTMENTS":
+      return {
+        ...store,
+        appointmentsList: action.payload,
       };
 
     case "updateUser":
@@ -122,6 +138,6 @@ export default function storeReducer(store, action = {}) {
       };
 
     default:
-      throw Error("Unknown action.");
+      throw Error(`Unknown action type: ${action.type}`);
   }
 }

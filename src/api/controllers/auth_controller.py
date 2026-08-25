@@ -3,6 +3,7 @@ from api.models.user import UserRole
 from api.services.user_service import get_user_by_email, create_user, patch_user
 from api.models import db
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from werkzeug.security import check_password_hash
 
 
 def login():
@@ -14,12 +15,22 @@ def login():
         return jsonify({"message": "Email and password are required"}), 400
 
     user = get_user_by_email(email)
-    if user is None or user.password != password:
+    
+    # Comprobamos la contraseña de forma segura (soporta hashes y texto plano antiguo por seguridad)
+    is_valid_password = False
+    if user:
+        if user.password.startswith("pbkdf2:") or user.password.startswith("scrypt:"):
+            is_valid_password = check_password_hash(user.password, password)
+        else:
+            is_valid_password = (user.password == password)
+
+    if user is None or not is_valid_password:
         return jsonify({"message": "Invalid email or password"}), 401
     
     token = create_access_token(identity=str(user.serialize()["id"]))
     
     return jsonify({"user": user.serialize(), "token": token}), 200
+
 
 def signup():
     user_data = request.get_json(silent=True) or {}
@@ -36,6 +47,7 @@ def signup():
     except ValueError:
         return jsonify({"message": "Invalid role"}), 400
 
+    # create_user ya hace el add y el commit internamente de forma segura
     user = create_user(
         role=role,
         email=user_data["email"],
@@ -46,10 +58,8 @@ def signup():
         category=user_data.get("category")
     )
 
-    db.session.add(user)
-    db.session.commit()
-
     return jsonify({"user": user.serialize()}), 201
+
 
 def patch_user_controller(user_id):
     user = patch_user(user_id)

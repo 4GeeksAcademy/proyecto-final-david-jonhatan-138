@@ -11,10 +11,12 @@ import { Professional } from "./pages/Professional";
 import { Login } from "./pages/Login";
 import Signin from "./pages/Signin";
 import { PrivateRoute } from "./components/PrivateRoute";
+import { AdminRoute } from "./components/AdminRoute"; // <-- 1. Importamos el protector de admin
 import { ShowClients } from "./pages/ShowClients";
 import { ResetPass } from "./pages/ResetPass";
 import { TokenReset } from "./components/TokenReset";
-import { AppointmentsView } from "./pages/AppointmentsView"; // <-- Importamos la nueva vista
+import { AppointmentsView } from "./pages/AppointmentsView";
+import { AdminUsersView } from "./pages/AdminUsersView"; // <-- 2. Importamos la vista del panel admin
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -23,11 +25,21 @@ export const router = createBrowserRouter(
       <Route path="/single/:theId" element={<Single />} />
       <Route path="/demo" element={<Demo />} />
       <Route path="/professional" element={<PrivateRoute><Professional /></PrivateRoute>} />
-      <Route path="/appointments" element={<PrivateRoute><AppointmentsView /></PrivateRoute>} /> {/* <-- Nueva ruta */}
+      <Route path="/appointments" element={<PrivateRoute><AppointmentsView /></PrivateRoute>} />
       <Route path="/login" element={<Login />} />
       <Route path="/signin" element={<Signin />} />
       <Route path="/show-clients" element={<PrivateRoute><ShowClients /></PrivateRoute>} />
       <Route path="/reset-pass" element={<TokenReset><ResetPass /></TokenReset>} />
+
+      {/* --- 3. AÑADIMOS LA RUTA PROTEGIDA DE ADMINISTRACIÓN --- */}
+      <Route
+        path="/admin/users"
+        element={
+          <AdminRoute>
+            <AdminUsersView />
+          </AdminRoute>
+        }
+      />
     </Route>
   )
-);
+)
