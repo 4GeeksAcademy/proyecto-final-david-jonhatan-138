@@ -40,7 +40,14 @@ def patch_user(user_id):
     if "biografi" in data:
         user.biografi = data["biografi"]
 
+    if "role" in data:
+        user.role = data["role"]
+
     db.session.commit()
 
     return user.serialize()
+
+def get_all_user():
+    users = User.query.all()
+    return [user.serialize() for user in users]
 
