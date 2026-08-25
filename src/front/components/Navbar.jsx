@@ -83,8 +83,8 @@ export const Navbar = () => {
 	}
 
 	function handleSendMessage() {
-		sendMessage({ email: store.user.email })
 		const tokenReset = crypto.randomUUID()
+		sendMessage({ email: store.user.email, tokenReset: tokenReset })
 		localStorage.setItem("tokenReset", tokenReset)
 		toast.success("Correo de recuperacion envido correctamente")
 	}

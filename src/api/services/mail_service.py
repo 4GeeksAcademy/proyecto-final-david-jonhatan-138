@@ -10,12 +10,13 @@ def mail_reset_pass():
     remitente = os.getenv("MAIL")
     password = os.getenv("PASSWORD")
     destinatario = data["email"]
+    tokenReset = data["tokenReset"]
 
     msg = EmailMessage()
     msg["Subject"] = "Reiniciar Contraseña"
     msg["From"] = remitente
     msg["To"] = destinatario
-    msg.set_content(f"{os.getenv("VITE_FRONTEND_URL")}/reset-pass")
+    msg.set_content(f"{os.getenv("VITE_FRONTEND_URL")}/reset-pass?tokenReset={tokenReset}")
 
     context = ssl.create_default_context()
 

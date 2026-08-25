@@ -47,8 +47,8 @@ export const Login = props => {
         const modalEl = document.getElementById("emailModal");
         const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
         modal.hide();
-        sendMessage({ email: email })
 		const tokenReset = crypto.randomUUID()
+        sendMessage({ email: email, tokenReset: tokenReset })
 		localStorage.setItem("tokenReset", tokenReset)
         localStorage.setItem("email", email)
 		toast.success("Correo de recuperacion envido correctamente")

@@ -1,10 +1,16 @@
-import { Navigate } from "react-router-dom";
-import useGlobalReducer from "../hooks/useGlobalReducer";
+import { Navigate, useLocation } from "react-router-dom";
 
-export const TokenReset = ({children}) =>{
-    if (!localStorage.getItem("tokenReset")) {
-        return <Navigate to="/professional" replace/>
+export const TokenReset = ({ children }) => {
+    console.log("Storage: "+localStorage.getItem("tokenReset"));
+    const { search } = useLocation();
+    const query = new URLSearchParams(search);
+    console.log("Url: " + query.get("tokenReset"));
+    console.log(localStorage.getItem("tokenReset") === query.get("tokenReset"));
+    if (!localStorage.getItem("tokenReset") || localStorage.getItem("tokenReset") !== query.get("tokenReset")) {
+        console.log("entra");
+        
+        return <Navigate to="/professional" replace />
     }
-    
+
     return children
 }
