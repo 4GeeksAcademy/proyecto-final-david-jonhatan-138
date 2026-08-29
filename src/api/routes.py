@@ -1,6 +1,7 @@
 """
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
+from api.controllers.stripe_controller import StripeController
 from flask import Blueprint
 
 from api.controllers.main_controller import hello
@@ -190,3 +191,8 @@ def admin_create_user():
 @api.route('/user', methods=['GET'])
 def get_all_user():
     return get_all_user_controller()
+
+@api.route("/subscriptions", methods=['post'])
+def stripe_subscription():
+    return StripeController.create_subscription()
+

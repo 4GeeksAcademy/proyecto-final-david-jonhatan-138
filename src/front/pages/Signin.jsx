@@ -13,7 +13,7 @@ export default function Signin() {
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();        
+        e.preventDefault();
         const [data, error] = await signinService(form);
 
         if (error) {
@@ -21,7 +21,7 @@ export default function Signin() {
             return;
         }
         dispatch({ type: "login", payload: { token: data.token, user: data.user } });
-        navigate("/professional");
+        window.location = data.url
     };
 
     return (

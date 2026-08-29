@@ -1,7 +1,7 @@
 import enum
 from datetime import datetime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, DateTime, Enum
+from sqlalchemy import String, DateTime, Enum, Boolean
 from api.models import db
 
 class UserRole(enum.Enum):
@@ -19,6 +19,8 @@ class User(db.Model):
     last_name: Mapped[str] = mapped_column(String(30), nullable=False)
     biografi: Mapped[str] = mapped_column(String(255), nullable=True)
     category: Mapped[str] = mapped_column(String(120), nullable=True)
+    id_stripe_user: Mapped[str] = mapped_column(String(255), nullable=True)
+    payment: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     update_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -36,6 +38,8 @@ class User(db.Model):
             "last_name": self.last_name,
             "biografi": self.biografi,
             "category": self.category,
+            "id_stripe_user": self.id_stripe_user,
+            "payment": self.payment,
             "created_at": self.created_at.isoformat(),
             "update_at": self.update_at.isoformat()
         }

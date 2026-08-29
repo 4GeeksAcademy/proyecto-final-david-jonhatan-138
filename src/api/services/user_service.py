@@ -7,7 +7,7 @@ def get_user_by_email(email: str):
     return User.query.filter_by(email=email).first()
 
 
-def create_user(role, email, password, name, last_name, biografi=None, category=None):
+def create_user(role, email, password, name, last_name, biografi=None, category=None, id_stripe_user=None):
     # Encriptamos la contraseña por seguridad antes de guardarla
     hashed_password = generate_password_hash(password)
     
@@ -18,7 +18,8 @@ def create_user(role, email, password, name, last_name, biografi=None, category=
         name=name,
         last_name=last_name,
         biografi=biografi,
-        category=category
+        category=category,
+        id_stripe_user=id_stripe_user
     )
     
     db.session.add(new_user)
