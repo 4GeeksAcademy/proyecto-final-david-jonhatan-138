@@ -34,4 +34,20 @@ class StripeController:
             "user": user_data
         })
 
+    @staticmethod
+    def stripe_webhook():
+        payload = request.data
+        sig_header = request.headers.get("Stripe-Signature")
+
+        try:
+            event = StripeService.verify_event(payload, sig_header)
+        except Exception as e:
+            print("⚠️ Error verificando webhook:", e)
+            return jsonify({"message": "Invalid signature"}), 400
+
+        # Procesar evento
+        StripeService.process_event(event)
+
+        return jsonify({"message": "Webhook received"}), 200
+
 

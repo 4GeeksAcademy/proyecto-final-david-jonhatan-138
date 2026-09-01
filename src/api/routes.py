@@ -196,3 +196,7 @@ def get_all_user():
 def stripe_subscription():
     return StripeController.create_subscription()
 
+@api.route("/check-webhook", methods=['post'])
+def stripe_check_webhook():
+    return StripeController.stripe_webhook()
+
