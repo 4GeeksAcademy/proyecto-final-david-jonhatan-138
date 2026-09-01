@@ -32,10 +32,9 @@ def login():
     return jsonify({"user": user.serialize(), "token": token}), 200
 
 
-def signup():
+def signup(id_stripe_user):
     user_data = request.get_json(silent=True) or {}
     required_fields = ("role", "email", "password", "name", "last_name")
-
     if any(not user_data.get(field) for field in required_fields):
         return jsonify({"message": "All required fields must be provided"}), 400
 
@@ -53,7 +52,8 @@ def signup():
         name=user_data["name"],
         last_name=user_data["last_name"],
         biografi=user_data["biografi"],
-        category=user_data["category"]
+        category=user_data["category"],
+        id_stripe_user=id_stripe_user
     )
 
     return jsonify({"user": user.serialize()}), 201

@@ -38,10 +38,10 @@ export const getProfile = async (token) => {
 
 export const signinService = async ({email ,name ,last_name ,password ,category ,biografi, role}) => {
     try {
-        const response = await fetch(backendUrl + "/api/signin", {
+        const response = await fetch(backendUrl + "/api/subscriptions", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email ,name ,last_name ,password ,category ,biografi, role}),
+            body: JSON.stringify({ email ,name ,last_name ,password ,category ,biografi, role, userId: email}),
         });
 
         if (!response.ok) {
