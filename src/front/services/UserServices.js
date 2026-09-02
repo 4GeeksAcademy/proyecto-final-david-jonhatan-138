@@ -1,16 +1,19 @@
 const userServices = {
   getAllUsers: async () => {
     try {
-      // Usamos ruta relativa pura para que el proxy de Vite maneje el puerto automáticamente y evite CORS
-      const response = await fetch("/api/user", {
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || "";
+      const response = await fetch(`${backendUrl}/api/user`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
         },
       });
-      if (!response.ok)
-        throw new Error("Error al obtener la lista de usuarios");
-      return await response.json();
+      
+      if (!response.ok) throw new Error("Error al obtener la lista de usuarios");
+      
+      const data = await response.json();
+      // Retornamos los datos directamente si es un array, o si vienen dentro de una propiedad "users"
+      return Array.isArray(data) ? data : (data.users || []);
     } catch (error) {
       console.error("Error en userServices.getAllUsers:", error);
       return [];
@@ -19,13 +22,15 @@ const userServices = {
 
   updateUserField: async (userId, updateData) => {
     try {
-      const response = await fetch(`/api/user/${userId}`, {
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || "";
+      const response = await fetch(`${backendUrl}/api/user/${userId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(updateData),
       });
+      
       if (!response.ok) throw new Error("Error al actualizar el usuario");
       return await response.json();
     } catch (error) {
