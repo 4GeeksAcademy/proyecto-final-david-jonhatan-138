@@ -22,6 +22,7 @@ class User(db.Model):
     id_stripe_user: Mapped[str] = mapped_column(String(255), nullable=True)
     id_stripe_subscription: Mapped[str] = mapped_column(String(255), nullable=True)
     payment: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    subscription_status: Mapped[str] = mapped_column(String(50), default="pending", nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     update_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -40,8 +41,9 @@ class User(db.Model):
             "biografi": self.biografi,
             "category": self.category,
             "id_stripe_user": self.id_stripe_user,
-            "id_stripe_subscription": self.id_stripe_subscription,  # 👉 añadido al JSON
+            "id_stripe_subscription": self.id_stripe_subscription,
             "payment": self.payment,
+            "subscription_status": self.subscription_status,  # 👉 añadido al JSON
             "created_at": self.created_at.isoformat(),
             "update_at": self.update_at.isoformat()
         }

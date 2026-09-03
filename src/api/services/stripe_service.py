@@ -48,16 +48,16 @@ class StripeService:
                 print("⚠️ No hay subscription en el evento, recuperando desde Stripe…")
                 # Stripe crea la suscripción en invoice.paid, así que aquí no siempre existe
             else:
-                update_payment_by_stripe_id(customer_id, True,subscription_id)
+                update_payment_by_stripe_id(customer_id, True,subscription_id,"active")
 
         # 2️⃣ Pago exitoso
         elif event_type == "invoice.paid":
             subscription_id = obj.get("subscription")
-            update_payment_by_subscription_id(subscription_id,True)
+            update_payment_by_subscription_id(subscription_id,True,"active")
 
         # 3️⃣ Pago fallido
         elif event_type == "invoice.payment_failed":
             subscription_id = obj.get("subscription")
-            update_payment_by_subscription_id(subscription_id, False)
+            update_payment_by_subscription_id(subscription_id, False,"pending")
 
     
