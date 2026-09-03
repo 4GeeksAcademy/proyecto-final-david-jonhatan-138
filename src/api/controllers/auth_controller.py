@@ -58,6 +58,31 @@ def signup(id_stripe_user):
 
     return jsonify({"user": user.serialize()}), 201
 
+def newuser():
+    user_data = request.get_json(silent=True) or {}
+    required_fields = ("role", "email", "password", "name", "last_name")
+    if any(not user_data.get(field) for field in required_fields):
+        return jsonify({"message": "All required fields must be provided"}), 400
+
+    if get_user_by_email(user_data["email"]) is not None:
+        return jsonify({"message": "Email is already registered"}), 409
+
+    if user_data["role"] != "admin" and user_data["role"] != "professional":
+        return jsonify({"message": "Invalid role"}), 400
+
+    # create_user ya hace el add y el commit internamente de forma segura
+    user = create_user(
+        role=user_data["role"],
+        email=user_data["email"],
+        password=user_data["password"],
+        name=user_data["name"],
+        last_name=user_data["last_name"],
+        biografi=user_data["biografi"],
+        category=user_data["category"],
+    )
+
+    return jsonify({"user": user.serialize()}), 201
+
 
 def patch_user_controller(user_id):
     user = patch_user(user_id)

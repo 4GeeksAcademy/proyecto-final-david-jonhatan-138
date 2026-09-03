@@ -6,7 +6,7 @@ class StripeController:
     @staticmethod
     def create_subscription():
         data = request.get_json()
-
+        print(data)
         price_id = os.getenv("ID_PRICE_STRIPE")
         email = data["email"]
         user_id = data["userId"]
