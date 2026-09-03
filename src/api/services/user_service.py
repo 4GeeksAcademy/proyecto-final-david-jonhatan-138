@@ -67,18 +67,20 @@ def get_all_user():
     users = User.query.all()
     return [user.serialize() for user in users]
 
-def update_payment_by_subscription_id(stripe_subscription_id: str, value: bool):
+def update_payment_by_subscription_id(stripe_subscription_id: str, value: bool, subscription_status: str):
     user = User.query.filter_by(id_stripe_subscription=stripe_subscription_id).first()
 
     if not user:
         return None  # o lanzar excepción si prefieres
 
     user.payment = value
+    user.subscription_status = subscription_status
+
     db.session.commit()
 
     return user
 
-def update_payment_by_stripe_id(stripe_customer_id: str, value: bool, stripe_subscription_id: str | None = None):
+def update_payment_by_stripe_id(stripe_customer_id: str, value: bool, stripe_subscription_id: str | None, subscription_status: str):
     user = User.query.filter_by(id_stripe_user=stripe_customer_id).first()
 
     if not user:
@@ -87,7 +89,7 @@ def update_payment_by_stripe_id(stripe_customer_id: str, value: bool, stripe_sub
 
     # Actualizar estado de pago
     user.payment = value
-
+    user.subscription_status = subscription_status
     # Actualizar suscripción si viene del webhook
     if stripe_subscription_id is not None:
         user.id_stripe_subscription = stripe_subscription_id

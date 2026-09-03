@@ -26,6 +26,9 @@ def login():
 
     if user is None or not is_valid_password:
         return jsonify({"message": "Invalid email or password"}), 401
+
+    if user.subscription_status == "suspended":
+        return jsonify({"message": "Suspended Acount"}), 403
     
     token = create_access_token(identity=str(user.serialize()["id"]))
     
