@@ -11,12 +11,15 @@ import { Professional } from "./pages/Professional";
 import { Login } from "./pages/Login";
 import Signin from "./pages/Signin";
 import { PrivateRoute } from "./components/PrivateRoute";
-import { AdminRoute } from "./components/AdminRoute"; // <-- 1. Importamos el protector de admin
+import { AdminRoute } from "./components/AdminRoute";
 import { ShowClients } from "./pages/ShowClients";
 import { ResetPass } from "./pages/ResetPass";
 import { TokenReset } from "./components/TokenReset";
 import { AppointmentsView } from "./pages/AppointmentsView";
-import { AdminUsersView } from "./pages/AdminUsersView"; // <-- 2. Importamos la vista del panel admin
+import { AdminUsersView } from "./pages/AdminUsersView";
+
+// <-- NUEVO: Importamos la vista del Dashboard Principal de Admin
+import { AdminDashboard } from "./pages/AdminDashboard";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -31,7 +34,19 @@ export const router = createBrowserRouter(
       <Route path="/show-clients" element={<PrivateRoute><ShowClients /></PrivateRoute>} />
       <Route path="/reset-pass" element={<TokenReset><ResetPass /></TokenReset>} />
 
-      {/* --- 3. AÑADIMOS LA RUTA PROTEGIDA DE ADMINISTRACIÓN --- */}
+      {/* --- RUTAS PROTEGIDAS DE ADMINISTRACIÓN (DUEÑOS) --- */}
+
+      {/* 1. Dashboard Principal (NUEVO) */}
+      <Route
+        path="/admin/dashboard"
+        element={
+          <AdminRoute>
+            <AdminDashboard />
+          </AdminRoute>
+        }
+      />
+
+      {/* 2. Gestión de Usuarios */}
       <Route
         path="/admin/users"
         element={

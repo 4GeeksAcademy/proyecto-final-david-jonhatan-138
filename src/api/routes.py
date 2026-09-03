@@ -1,9 +1,8 @@
 """
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
+from flask import Blueprint, jsonify, request
 from api.controllers.stripe_controller import StripeController
-from flask import Blueprint
-
 from api.controllers.main_controller import hello
 from api.controllers.auth_controller import get_user_by_email_controller, login as login_controller, signup as signup_controller, patch_user_controller, get_all_user_controller
 from api.controllers.appointment_controller import (
@@ -17,10 +16,10 @@ from api.controllers.appointment_controller import (
 from api.controllers.client_controller import ClientController
 from api.controllers.service_controller import ServiceController
 from api.controllers.mail_controller import mail_reset_pass_controller
+from api.models.user import User, db
+from werkzeug.security import generate_password_hash
 
 api = Blueprint('api', __name__)
-
-# Allow CORS requests to this API
 
 
 @api.route('/login', methods=['POST'])
@@ -137,24 +136,23 @@ def mail_reset_pass():
 def get_user_by_email():
     return get_user_by_email_controller()
 
-# --- NUEVAS RUTAS PARA EL PANEL DE ADMINISTRACIÓN (DUEÑOS) ---
 
+# --- RUTAS PARA EL PANEL DE ADMINISTRACIÓN (DUEÑOS) ---
 
 @api.route('/user', methods=['GET'])
 def get_all_users():
-    """Endpoint para listar todos los usuarios en el panel de admin"""
-    from api.models.user import User
-    users = User.query.all()
-    return jsonify([user.serialize() for user in users]), 200
+    """Endpoint unificado para listar todos los usuarios en el panel de admin"""
+    try:
+        users = User.query.all()
+        return jsonify([user.serialize() for user in users]), 200
+    except Exception as e:
+        print(f"Error cargando usuarios: {e}")
+        return jsonify({"message": "Error al cargar los usuarios"}), 500
 
 
 @api.route('/admin/users', methods=['POST'])
 def admin_create_user():
     """Endpoint exclusivo para que el admin cree usuarios con cualquier rol/suscripción"""
-    from api.models.user import User, db
-    from werkzeug.security import generate_password_hash
-    from flask import request, jsonify
-
     data = request.get_json()
     email = data.get("email")
     password = data.get("password")
@@ -188,15 +186,11 @@ def admin_create_user():
         "user": new_user.serialize()
     }), 201
 
-@api.route('/user', methods=['GET'])
-def get_all_user():
-    return get_all_user_controller()
 
-@api.route("/subscriptions", methods=['post'])
+@api.route("/subscriptions", methods=['POST'])
 def stripe_subscription():
     return StripeController.create_subscription()
 
 @api.route("/check-webhook", methods=['post'])
 def stripe_check_webhook():
     return StripeController.stripe_webhook()
-
