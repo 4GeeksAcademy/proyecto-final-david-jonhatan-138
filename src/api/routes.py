@@ -4,7 +4,7 @@ This module takes care of starting the API Server, Loading the DB and Adding the
 from flask import Blueprint, jsonify, request
 from api.controllers.stripe_controller import StripeController
 from api.controllers.main_controller import hello
-from api.controllers.auth_controller import get_user_by_email_controller, login as login_controller, signup as signup_controller, patch_user_controller, get_all_user_controller
+from api.controllers.auth_controller import get_user_by_email_controller, login as login_controller, newuser as signup_controller, patch_user_controller, get_all_user_controller
 from api.controllers.appointment_controller import (
     create_appointment as create_appointment_controller,
     delete_appointment as delete_appointment_controller,
