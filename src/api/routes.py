@@ -190,3 +190,7 @@ def admin_create_user():
 @api.route("/subscriptions", methods=['POST'])
 def stripe_subscription():
     return StripeController.create_subscription()
+
+@api.route("/check-webhook", methods=['post'])
+def stripe_check_webhook():
+    return StripeController.stripe_webhook()
