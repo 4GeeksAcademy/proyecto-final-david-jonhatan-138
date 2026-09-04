@@ -95,7 +95,7 @@ export const Navbar = () => {
 					<div className="d-flex gap-2">
 
 						<Link to="/">
-							<span className="navbar-brand mb-0 h1">React Boilerplate</span>
+							<span className="navbar-brand mb-0 h1">IndieMeet</span>
 						</Link>
 					</div>
 					<div className="ml-auto d-flex gap-2">
