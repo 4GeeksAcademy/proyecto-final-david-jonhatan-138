@@ -60,9 +60,9 @@ export const Home = () => {
 							Crea, modifica y organiza tus citas en segundos.
 							Tu agenda se sincroniza automáticamente con tus clientes y evita confusiones.
 						</p>
-						<Button variant="outline-primary" size="lg">
+						{/* <Button variant="outline-primary" size="lg">
 							Ver cómo funciona
-						</Button>
+						</Button> */}
 					</Col>
 
 					<Col md={6}>
