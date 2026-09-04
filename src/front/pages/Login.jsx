@@ -75,7 +75,7 @@ export const Login = props => {
                         <button type="submit" className="btn btn-primary w-100">Entrar</button>
 
                         <div className="text-center mt-3">
-                            <Link to="/signup" className="text-decoration-none">Crear Cuenta</Link>
+                            <Link to="/signin" className="text-decoration-none">Crear Cuenta</Link>
                         </div>
 
                         <button type="button" className="text-primary border-0 bg-transparent w-100" data-bs-toggle="modal" data-bs-target="#emailModal">Olvide la contraseña</button>

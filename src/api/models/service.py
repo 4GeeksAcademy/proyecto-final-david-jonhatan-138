@@ -11,14 +11,25 @@ class Service(db.Model):
     duration: Mapped[int] = mapped_column(Integer, nullable=False)
     price: Mapped[int] = mapped_column(Integer, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
+
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("user.id", ondelete="CASCADE"),
+        nullable=False
+    )
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     update_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # Relaciones
-    user: Mapped["User"] = relationship(back_populates="services")
-    appointments: Mapped[list["Appointment"]] = relationship(back_populates="service")
+    user: Mapped["User"] = relationship(
+        back_populates="services",
+        passive_deletes=True
+    )
+
+    appointments: Mapped[list["Appointment"]] = relationship(
+        back_populates="service",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
 
     def serialize(self):
         return {

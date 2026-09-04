@@ -23,13 +23,28 @@ class User(db.Model):
     id_stripe_subscription: Mapped[str] = mapped_column(String(255), nullable=True)
     payment: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     subscription_status: Mapped[str] = mapped_column(String(50), default="pending", nullable=True)
+
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     update_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # Relaciones
-    appointments: Mapped[list["Appointment"]] = relationship(back_populates="user")
-    clients: Mapped[list["Client"]] = relationship(back_populates="user")
-    services: Mapped[list["Service"]] = relationship(back_populates="user")
+    # Relaciones con cascada
+    appointments: Mapped[list["Appointment"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+
+    clients: Mapped[list["Client"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+
+    services: Mapped[list["Service"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
 
     def serialize(self):
         return {
@@ -43,7 +58,7 @@ class User(db.Model):
             "id_stripe_user": self.id_stripe_user,
             "id_stripe_subscription": self.id_stripe_subscription,
             "payment": self.payment,
-            "subscription_status": self.subscription_status,  # 👉 añadido al JSON
+            "subscription_status": self.subscription_status,
             "created_at": self.created_at.isoformat(),
             "update_at": self.update_at.isoformat()
         }
