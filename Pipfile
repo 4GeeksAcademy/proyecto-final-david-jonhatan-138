@@ -22,6 +22,7 @@ pyjwt = "*"
 python-dotenv = "*"
 flask = "*"
 stripe = "*"
+tomli = "*"
 
 [requires]
 python_version = "3.13"
