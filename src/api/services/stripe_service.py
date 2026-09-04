@@ -18,8 +18,8 @@ class StripeService:
             mode="subscription",
             customer=customer_id,
             line_items=[{"price": price_id, "quantity": 1}],
-            success_url=f"{os.getenv("VITE_FRONTEND_URL")}/professional?session_id={{CHECKOUT_SESSION_ID}}",
-            cancel_url=f"{os.getenv("VITE_FRONTEND_URL")}"
+            success_url=f"{os.getenv('VITE_FRONTEND_URL')}/professional?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{os.getenv('VITE_FRONTEND_URL')}"
         )
 
     @staticmethod
