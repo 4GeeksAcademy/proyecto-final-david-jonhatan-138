@@ -11,15 +11,25 @@ class Client(db.Model):
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
     email: Mapped[str] = mapped_column(String(255))
     phone: Mapped[int] = mapped_column(Integer)
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
-    
+
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("user.id", ondelete="CASCADE"),
+        nullable=False
+    )
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     update_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # Relaciones
-    user: Mapped["User"] = relationship(back_populates="clients")
-    appointments: Mapped[list["Appointment"]] = relationship(back_populates="client", cascade="all, delete-orphan")
+    user: Mapped["User"] = relationship(
+        back_populates="clients",
+        passive_deletes=True
+    )
+
+    appointments: Mapped[list["Appointment"]] = relationship(
+        back_populates="client",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
 
     def serialize(self):
         return {
